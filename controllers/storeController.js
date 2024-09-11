@@ -39,29 +39,6 @@ const upload = multer({
     }
 }).single('storePhoto');
 
-// exports.createStore = async (req, res) => {
-//     try {
-//         const { storeName, location, storeContact, ...otherData } = req.body;
-
-//         if (await Store.findOne({ where: { storeName } })) {
-//             return res.status(400).json({ error: 'Store Name already exists' });
-//         }
-
-//         if (await Store.findOne({ where: { location } })) {
-//             return res.status(400).json({ error: 'A Store is already in this location' });
-//         }
-
-//         if (!validatePhoneNumber(storeContact)) {
-//             return res.status(400).json({ error: 'Invalid phone number format' });
-//         }
-
-//         const store = await Store.create({ storeName, location, storeContact, ...otherData });
-//         res.status(201).json(store);
-
-//     } catch (error) {
-//         res.status(500).json({ error: error.message });
-//     }
-// };
 // Create store with image upload
 exports.createStore = async (req, res) => {
     upload(req, res, async (err) => {
