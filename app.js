@@ -40,8 +40,7 @@ app.use("/api/IMS/category", categoryRoute);
 app.use("/api/IMS/store", storeRoute);
 app.use("/api/IMS/sales", salesRecordRoute);
 
-//swagger docs at/api-docs
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+
 
 cron.schedule('*/30 * * * *', async ()=> {
   try {
