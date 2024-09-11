@@ -1,11 +1,13 @@
 const { Product } = require('../models'); // Import the Product model
 const { Op } = require('sequelize');
+const path = require("path")
 const cloudinary = require("../config/cloudinary")
 const {createProductSchema, updateProductSchema,updateStockSchema} = require("../validations/productValidation")
 
 // Create a new product
 exports.createProduct = async (req, res) => {
   try {
+   
     const { name, price, itemCode,  alertStatus, quantity, categoryId, storeId,storeAvailable, prodDate } = req.body;
     //const prodPhoto = req.file? req.file.path: null
     const result = await cloudinary.uploader.upload(req.file.path, {
@@ -13,6 +15,7 @@ exports.createProduct = async (req, res) => {
       width: 300,
       crop: "scale"
     });
+  
     // Extract URL and public_id from result
     const { url, public_id } = result;
     const { error } = createProductSchema.validate(req.body);

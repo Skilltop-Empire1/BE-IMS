@@ -3,6 +3,7 @@ require("dotenv").config()
 const morgan = require("morgan")
 const cors = require("cors")
 const app = express()
+const {swaggerUi,swaggerSpec} =  require("./swagger")
 
 require("./models")
 
@@ -37,7 +38,8 @@ app.use("/api/IMS/category", categoryRoute);
 app.use("/api/IMS/store", storeRoute);
 app.use("/api/IMS/sales", salesRecordRoute);
 
-
+//swagger docs at/api-docs
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 const startServer = async () => {
     try {
