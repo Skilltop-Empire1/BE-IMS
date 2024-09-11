@@ -7,7 +7,7 @@ const {createProductSchema, updateProductSchema,updateStockSchema} = require("..
 // Create a new product
 exports.createProduct = async (req, res) => {
   try {
-   
+  
     const { name, price, itemCode,  alertStatus, quantity, categoryId, storeId,storeAvailable, prodDate } = req.body;
     //const prodPhoto = req.file? req.file.path: null
     const result = await cloudinary.uploader.upload(req.file.path, {
@@ -73,25 +73,45 @@ exports.getProductById = async (req, res) => {
   }
 };
 
-// Update a product
+
 exports.updateProduct = async (req, res) => {
   try {
-    const product = await Product.findByPk(req.params.prodId);
-    if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
-    // request body validation
+    const { prodId } = req.params; 
+    const { name, price, itemCode, alertStatus, quantity, categoryId, storeId, storeAvailable, prodDate } = req.body;
+    const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "image",
+        width: 300,
+        crop: "scale",
+      });
+      //Extract product url
+      const {url} = result;
+  
     const { error } = updateProductSchema.validate(req.body);
     if (error) {
       return res.status(400).json({ message: error.details[0].message });
     }
-    //update request body
-    await product.update(req.body);
-    res.status(200).json(product);
+    const product = await Product.findByPk(prodId);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    await product.update({
+      name:name || product.name,
+      price:price || product.price,
+      itemCode:itemCode || product.itemCode,
+      prodPhoto: url || product.prodPhoto, 
+      alertStatus:alertStatus || product.alertStatus,
+      quantity:quantity || product.quantity,
+      categoryId:categoryId || product.categoryId,
+      storeId:storeId || product.storeId,
+      storeAvailable:storeAvailable || product.storeAvailable,
+      prodDate:prodDate || product.prodDate,
+    });
+    res.status(200).json({ message: "Product updated successfully", product });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 };
+
 
 // Delete a product
 exports.deleteProduct = async (req, res) => {
