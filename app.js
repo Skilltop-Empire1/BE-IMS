@@ -3,6 +3,7 @@ require("dotenv").config()
 const morgan = require("morgan")
 const cors = require("cors")
 const app = express()
+const {swaggerUi,swaggerSpec} =  require("./swagger")
 
 require("./models")
 
@@ -36,7 +37,7 @@ app.use("/api/IMS/product", productRoute);
 app.use("/api/IMS/category", categoryRoute);
 app.use("/api/IMS/store", storeRoute);
 app.use("/api/IMS/sales", salesRecordRoute);
-app.use('/uploads', express.static('uploads'));
+
 
 
 const startServer = async () => {
