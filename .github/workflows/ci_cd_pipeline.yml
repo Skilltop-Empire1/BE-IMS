@@ -46,3 +46,4 @@ jobs:
           render services update ${{ secrets.RENDER_SERVICE_ID }} --branch dev
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+

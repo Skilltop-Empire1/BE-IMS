@@ -223,7 +223,7 @@ router.get('/:prodId', productController.getProductById);
  *       404:
  *         description: Product not found
  */
-router.put('/:prodId', productController.updateProduct);
+router.put('/:prodId',upload.single("image"), productController.updateProduct);
 
 /**
  * @swagger

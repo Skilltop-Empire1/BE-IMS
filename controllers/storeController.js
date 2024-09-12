@@ -2,8 +2,9 @@
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path'); 
-const { Store , Product, SalesRecord, Category} = require('../models');
-const { validatePhoneNumber } = require('../utils/validators');
+const { storeSchema } = require('../validations/storeValidation');
+const { Store , Product, SalesRecord, Category,User} = require('../models');
+const { validatePhoneNumber } = require('../validations/numberValidator');
 const { Op, Sequelize } = require('sequelize');// Only import Op from Sequelize
 
 const sequelize = Sequelize;
@@ -48,7 +49,13 @@ exports.createStore = async (req, res) => {
             return res.status(400).json({ error: err.message });
         }
         try {
-            const {storeName, location, storeContact, description,noOfStaff,storeManager} = req.body;
+            // Validate the request body using the imported storeSchema
+            const { error } = storeSchema.validate(req.body);
+            if (error) {
+                return res.status(400).json({ error: error.details[0].message });
+            }
+
+            const { userId, storeName, location, storeContact, description, noOfStaff, storeManager } = req.body;
 
             // Check if store name or location already exists
             if (await Store.findOne({ where: { storeName } })) {
@@ -72,6 +79,7 @@ exports.createStore = async (req, res) => {
 
             // Create the store in the database
             const store = await Store.create({
+                userId,
                 storeName,
                 location,
                 storeContact,
@@ -271,6 +279,34 @@ exports.editStoreById = async (req, res) => {
 
 
 
+// CREATE A TEMPORARY USER TO CREATE STORE. 
+exports.createTemporaryUserForTest = async (req, res) => {
+    try {
+        const { userName, email, password, role } = req.body;
+
+        // Ensure required fields are provided
+        if (!userName || !email || !password || !role) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        // Create a new temporary user
+        const newUser = await User.create({
+            userName,
+            email,
+            password, 
+            role
+        });
+
+        res.status(201).json({
+            message: 'Temporary user created successfully!',
+            data: newUser
+        });
+
+    } catch (error) {
+        console.error('Error creating temporary user:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
 
 
 

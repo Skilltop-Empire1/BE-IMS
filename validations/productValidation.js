@@ -19,7 +19,7 @@ exports.updateProductSchema = Joi.object({
   name: Joi.string().optional(),
   price: Joi.number().optional(),
   itemCode: Joi.string().optional(),
-  prodPhoto: Joi.string().optional(),
+  //prodPhoto: Joi.string().optional(),
   alertStatus: Joi.string().valid('active', 'low', 'sold out').optional(),
   quantity: Joi.number().optional(),
   categoryId: Joi.number().optional(),
