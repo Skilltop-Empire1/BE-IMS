@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config()
 
 const loginJWTAthentication = (req, res, next) => {
+
   const token = req.headers["authorization"];
   if (token) {
     jwt.verify(token, process.env.SECRET_KEY, (err, user) => {
@@ -15,6 +16,23 @@ const loginJWTAthentication = (req, res, next) => {
   } else {
     res.sendStatus(401);
   }
+
+
+
+
+// const token = req.cookies.token
+// try {
+//   const user = jwt.verify(token, process.env.SECRET_KEY) 
+//   req.user = user
+//   next()
+// } catch (error) {
+//   res.clearCookie("token")
+//   return res.send(err)
+//   // res.redirect("/")
+  
+// }
+
+
 };
 
 module.exports = loginJWTAthentication

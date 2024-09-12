@@ -5,6 +5,8 @@ const bcrypt = require("bcryptjs")
 const userschema = require("../validations/userValidation") 
 const Joi = require("joi")
 const loginAuthourization = require("../middlewares/authMiddleware")
+const jwt = require('jsonwebtoken');
+const SECRET_KEY = process.env.SECRET_KEY
 
 //************* User Object ***************** */
 
@@ -27,7 +29,8 @@ class UserObject {
       },
     });
 
-    const hashedPassword = bcrypt.hashSync(password, 10);
+    /******hash password***** */
+    const hashedPassword = await bcrypt.hash(password, 10);
     try {
       if (userExist) {
         return res.status(404).json({ msg: "A User with these details already Exist" });
@@ -61,24 +64,45 @@ login = async (req, res) =>{
     const {email, password} = req.body
 
     //************check for user ************ */
+    const user = await userModel.User.findOne({ where: {email}});
+    if (!user) return res.status(400).send('Email is not registered');
 
-    const user = await userModel.User.findOne({
-        where:{email}
-    })
-    try {
+    const encryptedPassword = await userModel.User.findOne({where: {password: bcrypt.compare(password)}})
+    return console.log(encryptedPassword)
 
-        //********if user login is wrong */
-        if(!user || !(await bcrypt.compare(password, user.password))){
-            return res.status(401).json({msg: "Incorrect username or password"})
-        }
+    // const isMatch = await bcrypt.compareSync(password, encryptedPassword);
+    // if (isMatch) return res.status(400).send(isMatch);
 
-        const token = jwt.sign(user, process.env.SECRET_KEY, {expiresIn: '1h'})
-        res.json({token})
+    // const token = jwt.sign(user.email, SECRET_KEY, { expiresIn: '1h' });
+    // res.json({ token });
 
-        //********if correct details ******/
-    } catch (error) {
-        throw error
-    }
+    // const user = await userModel.User.findOne({
+    //     where:{
+    //       email,
+    //       password: bcrypt.compare(password, userModel.User.password)
+    //     }
+    // })
+    // try {
+
+    //     //********if user login is wrong */
+    //     if(!user){
+    //         return res.status(401).json({msg: "Incorrect username or password"})
+    //     }
+
+    //     const token = jwt.sign(user, process.env.SECRET_KEY, {expiresIn: '1h'})
+    //     res.cookie("token", token,{
+    //         httpOnly: true,
+    //         // secure: true,
+    //         // signed: true
+    //     })
+    //     res.json({token})
+
+    //     //********if correct details ******/
+    // } catch (error) {
+    //     throw error
+    // }
+
+    
 }
 
 

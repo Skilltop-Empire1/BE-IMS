@@ -6,6 +6,6 @@ const {loginJWTAthentication} = require("../middlewares/authMiddleware")
 const router = express.Router();
 
 router.route('/signup', ).post(userController.signup)
-router.route('/login', loginJWTAthentication ).post( userController.login)
+router.route('/login'/*loginJWTAthentication*/ ).post( userController.login)
 
 module.exports = router;
