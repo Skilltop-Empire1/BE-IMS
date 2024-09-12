@@ -42,7 +42,7 @@ app.use("/api/IMS/sales", salesRecordRoute);
 
 
 
-// cron.schedule('*/30 * * * *', async ()=> {
+// cron.schedule('*/2 * * * *', async ()=> {
 //   try {
 //     const response = await axios.get(process.env.BACKEND_SERVER)
 //     console.log("update successful", response.status)
