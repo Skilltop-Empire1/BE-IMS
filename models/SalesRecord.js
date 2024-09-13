@@ -1,6 +1,10 @@
 module.exports = (sequelize, DataTypes) => {
     const SalesRecord = sequelize.define('SalesRecord', {
-      saleId: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+        saleId: {
+          type: DataTypes.UUID,
+          defaultValue: DataTypes.UUIDV4,
+          primaryKey: true,
+        },
       userId: { type: DataTypes.INTEGER, references: { model: 'Users', key: 'userId' } },
       productId: { type: DataTypes.INTEGER, references: { model: 'Products', key: 'prodId' } },
       paymentMethod: {
