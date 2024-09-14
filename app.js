@@ -3,6 +3,9 @@ require("dotenv").config()
 const morgan = require("morgan")
 const cors = require("cors")
 const app = express()
+const cron = require("node-cron")
+const axios = require("axios")
+const {swaggerUi,swaggerSpec} =  require("./swagger")
 
 require("./models")
 
@@ -40,6 +43,15 @@ app.use("/api/IMS/sales", salesRecordRoute);
 app.use("/api/IMS/staff", staffRoute);
 
 
+
+// cron.schedule('*/2 * * * *', async ()=> {
+//   try {
+//     const response = await axios.get(process.env.BACKEND_SERVER)
+//     console.log("update successful", response.status)
+//   } catch (error) {
+//     console.error("failed to update tasks", error.message)
+//   }
+// })
 
 const startServer = async () => {
     try {
