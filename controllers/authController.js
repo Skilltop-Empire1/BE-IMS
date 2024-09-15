@@ -27,22 +27,6 @@ class UserObject {
         return res.status(404).json({ msg: "User does not exist" });
       }
 
-      //***********generate random password */
-      const newPassword = await randompassword.generateRandomPassword();
-      const hashPassword = await bcrypt.hash(newPassword, 10);
-      const passwordToUpdate = toString(hashPassword);
-      const updatePassword = await userModel.User.update(
-        { password: passwordToUpdate },
-        { where: { email: email } }
-      );
-      if (!updatePassword) {
-        return res.status(404).json({ msg: "Password updated failed" });
-      } else {
-        console.log(updatePassword);
-        res.status(201).json({ msg: "Password updated successfully" });
-      }
-
-      // Send email with new password
       const transporter = nodemailer.createTransport({
         service: "gmail",
         host: "smtp.gmail.com",
@@ -60,7 +44,7 @@ class UserObject {
           address: process.env.EMAIL_USER,
         },
         to: "jakpan64@yahoo.com", //req.body.email,
-        subject: "Password Reset link",
+        subject: "IMS Reset link",
         text: `Your new password is: ${newPassword}`,
       };
 
@@ -68,7 +52,32 @@ class UserObject {
     } catch (error) {
       throw error;
     }
+
+      // //***********generate random password */
+      // const newPassword = await randompassword.generateRandomPassword();
+      // const hashPassword = await bcrypt.hash(newPassword, 10);
+      // const passwordToUpdate = toString(hashPassword);
+      // const updatePassword = await userModel.User.update(
+      //   { password: passwordToUpdate },
+      //   { where: { email: email } }
+      // );
+      // if (!updatePassword) {
+      //   return res.status(404).json({ msg: "Password updated failed" });
+      // } else {
+      //   console.log(updatePassword);
+      //   res.status(201).json({ msg: "Password updated successfully" });
+      // }
+
+      // Send email with new password
+      
+
+      
   };
+
+
+
+
+
 
   //********* signup method ************** */
 
