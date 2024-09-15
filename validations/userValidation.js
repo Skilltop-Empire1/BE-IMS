@@ -8,5 +8,17 @@ const userValidation = Joi.object({
   password: Joi.string().required().pattern(new RegExp("^[a-zA-Z0-9]{3,30}$"))
 });
 
+
+
+const validateLogin = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string().required().pattern(new RegExp("^[a-zA-Z0-9]{3,30}$"))
+
+
+})
+
 //*****export module */
-module.exports = userValidation;
+module.exports = {
+  userValidation,
+  validateLogin
+};
