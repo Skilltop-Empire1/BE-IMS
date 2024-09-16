@@ -6,10 +6,8 @@ const userschema = require("../validations/userValidation");
 const Joi = require("joi");
 const loginAuthourization = require("../middlewares/authMiddleware");
 const jwt = require("jsonwebtoken");
-const SECRET_KEY = process.env.SECRET_KEY;
 const randompassword = require("../middlewares/passwordResetMiddleware");
 const nodemailer = require("nodemailer");
-
 
 //************* User Object ***************** */
 
@@ -18,8 +16,8 @@ class UserObject {
 
   passwordReset = async (req, res) => {
     const { email } = req.body;
-    const user = await userModel.User.findOne({ 
-      where: { email } 
+    const user = await userModel.User.findOne({
+      where: { email },
     });
 
     try {
@@ -27,6 +25,8 @@ class UserObject {
         return res.status(404).json({ msg: "User does not exist" });
       }
 
+      const passwordLink = "www.gmail.com";
+      const randomText = await randompassword.generateRandomPassword();
       const transporter = nodemailer.createTransport({
         service: "gmail",
         host: "smtp.gmail.com",
@@ -45,39 +45,41 @@ class UserObject {
         },
         to: "jakpan64@yahoo.com", //req.body.email,
         subject: "IMS Reset link",
-        text: `Your new password is: ${newPassword}`,
+        text: `Click on the link to proceed with the password resert: ${passwordLink}`,
+        html: `<a href='https://example.com'>Click here to reset your password: ${randomText}</a>,`, // html body
       };
 
-      await transporter.sendMail(mailOptions);
+      res.json({
+        msg: "An email has been sent to you with a link to reset your password. If not seen in you inbox, please chech your spam.",
+      });
+
+      return await transporter.sendMail(mailOptions);
     } catch (error) {
       throw error;
     }
-
-      // //***********generate random password */
-      // const newPassword = await randompassword.generateRandomPassword();
-      // const hashPassword = await bcrypt.hash(newPassword, 10);
-      // const passwordToUpdate = toString(hashPassword);
-      // const updatePassword = await userModel.User.update(
-      //   { password: passwordToUpdate },
-      //   { where: { email: email } }
-      // );
-      // if (!updatePassword) {
-      //   return res.status(404).json({ msg: "Password updated failed" });
-      // } else {
-      //   console.log(updatePassword);
-      //   res.status(201).json({ msg: "Password updated successfully" });
-      // }
-
-      // Send email with new password
-      
-
-      
   };
 
+  //**********route to submit reset password and redirect to login */
 
-
-
-
+  resetSubmit = async (req, res) => {
+    const { email, password } = req.body;
+    const hash = await bcrypt.hash(password, 10);
+    const updatePassword = await userModel.User.update(
+      { password: hash },
+      { where: { email: email } }
+    );
+    try {
+      if (!updatePassword) {
+        return res.status(404).json({ msg: "Password reset failed" });
+      } else {
+        console.log(updatePassword);
+        res.status(201).json({ msg: "Password updated successfully" });
+        // return res.redirect('https://www.example.com')
+      }
+    } catch (error) {
+      throw error;
+    }
+  };
 
   //********* signup method ************** */
 
@@ -127,6 +129,8 @@ class UserObject {
     }
   };
 
+
+
   //************user signin  ***********/
 
   login = async (req, res) => {
@@ -148,10 +152,21 @@ class UserObject {
       if (!isMatch) {
         return res.status(404).json({ msg: "Incorrect login details" });
       } else {
-        return res.status(200).json({ msg: "Authentication success" });
+
+         // ******************Create JWT token ***********************
+        // const token = 
+        return jwt.sign({ email}, process.env.SECRET_KEY, { expiresIn: '1h' }, (err, token)=>{
+          // res.json({ token });
+        });
+
+        // res.cookie("token", token, {
+        //   httpOnly: true,
+        // })
+         // return res.status(200).json({ msg: "Authentication success" });
       }
     } catch (error) {
-      throw error;
+      console.error(error);
+      res.status(500).json({ message: 'Server error' });
     }
   };
 }
