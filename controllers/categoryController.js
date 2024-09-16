@@ -142,3 +142,80 @@ exports.getProductsByCategory = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
+
+// exports.filterAllCategory = async (req, res) => {
+//   try {
+//     const {
+//       name,
+//       storeId,
+//     } = req.query;
+//     const where = {};
+//     if (name) {
+//       where.name = { [Op.iLike]: `%${name}%` };
+//     }
+//     if (storeId && !isNaN(parseInt(storeId))) {
+//       where.storeId = parseInt(storeId);
+//     } else if (storeId) {
+//       return res.status(400).json({ error: 'Invalid storeId format' });
+//     }
+//     // Pagination logic
+//     const itemsPerPage = limit ? parseInt(limit) : 10; // Default limit: 10
+//     const currentPage = page ? parseInt(page) : 1;
+//     const offset = (currentPage - 1) * itemsPerPage;
+//     // Find products with filters, sorting, and pagination
+//     const products = await Category.findAll({
+//       where,
+//       order,
+//       limit: itemsPerPage,
+//       offset,
+//     });
+//     res.status(200).json(products);
+//   } catch (error) {
+//     res.status(400).json({ error: error.message });
+//   }
+// };
+exports.filterAllCategory = async (req, res) => {
+  try {
+    const { name, storeId, limit, page, orderBy, sortOrder } = req.query;
+    const where = {};
+
+    // Search by name (if provided)
+    if (name) {
+      where.name = { [Op.iLike]: `%${name}%` }; // Case-insensitive search for the name
+    }
+
+    // Search by storeId (if provided)
+    if (storeId) {
+      const parsedStoreId = parseInt(storeId);
+      if (!isNaN(parsedStoreId)) {
+        where.storeId = parsedStoreId; // Add storeId filter if valid
+      } else {
+        return res.status(400).json({ error: 'Invalid storeId format' });
+      }
+    }
+
+    // Pagination logic
+    const itemsPerPage = limit ? parseInt(limit) : 10; // Default limit: 10
+    const currentPage = page ? parseInt(page) : 1;
+    const offset = (currentPage - 1) * itemsPerPage;
+
+    // Sorting logic
+    const order = [];
+    if (orderBy) {
+      order.push([orderBy, sortOrder ? sortOrder.toUpperCase() : 'ASC']);
+    }
+
+    // Fetch categories with filters, sorting, and pagination
+    const categories = await Category.findAll({
+      where, // Apply filters
+      order, // Apply sorting
+      limit: itemsPerPage, // Apply pagination
+      offset,
+    });
+
+    // Return the filtered, sorted, and paginated categories
+    res.status(200).json(categories);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
