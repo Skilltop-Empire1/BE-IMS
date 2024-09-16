@@ -32,6 +32,7 @@ const productRoute = require("./routes/productRoutes");
 const categoryRoute = require("./routes/categoryRoutes");
 const storeRoute = require("./routes/storeRoutes");
 const salesRecordRoute = require("./routes/salesRoutes");
+const staffRoute = require("./routes/staffRoutes");
 
 app.use("/api/IMS/user", userRoute);
 app.use("/api/IMS/profile", profileRoute);
@@ -39,6 +40,7 @@ app.use("/api/IMS/product", productRoute);
 app.use("/api/IMS/category", categoryRoute);
 app.use("/api/IMS/store", storeRoute);
 app.use("/api/IMS/sales", salesRecordRoute);
+app.use("/api/IMS/staff", staffRoute);
 
 
 
