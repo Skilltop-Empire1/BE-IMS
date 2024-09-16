@@ -3,13 +3,16 @@ require("dotenv").config()
 const morgan = require("morgan")
 const cors = require("cors")
 const app = express()
+const cron = require("node-cron")
+const axios = require("axios")
+const {swaggerUi,swaggerSpec} =  require("./swagger")
 
 require("./models")
 
 
 
 const corsOptions = {
-    origin: [process.env.CLIENT_URL, "*"],
+    origin: [/*process.env.CLIENT_URL,*/ "*"],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
     allowedHeaders: "Content-Type,Authorization",
@@ -29,6 +32,7 @@ const productRoute = require("./routes/productRoutes");
 const categoryRoute = require("./routes/categoryRoutes");
 const storeRoute = require("./routes/storeRoutes");
 const salesRecordRoute = require("./routes/salesRoutes");
+const staffRoute = require("./routes/staffRoutes");
 
 app.use("/api/IMS/user", userRoute);
 app.use("/api/IMS/profile", profileRoute);
@@ -36,8 +40,18 @@ app.use("/api/IMS/product", productRoute);
 app.use("/api/IMS/category", categoryRoute);
 app.use("/api/IMS/store", storeRoute);
 app.use("/api/IMS/sales", salesRecordRoute);
+app.use("/api/IMS/staff", staffRoute);
 
 
+
+// cron.schedule('*/2 * * * *', async ()=> {
+//   try {
+//     const response = await axios.get(process.env.BACKEND_SERVER)
+//     console.log("update successful", response.status)
+//   } catch (error) {
+//     console.error("failed to update tasks", error.message)
+//   }
+// })
 
 const startServer = async () => {
     try {

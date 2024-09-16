@@ -1,0 +1,49 @@
+name: CI/CD Pipeline
+
+# Run this workflow whenever code is pushed to main or a pull request is opened/updated
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+    branches:
+      - dev
+
+jobs:
+  # Job to test the code
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
+  # Job to deploy to Render
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Render CLI
+        run: |
+          curl -fsSL https://render.com/static/cli/installer.sh | bash
+          export PATH="$HOME/.render:$PATH"
+
+      - name: Deploy to Render
+        run: |
+          render services update ${{ secrets.RENDER_SERVICE_ID }} --branch dev
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+
