@@ -53,6 +53,10 @@ app.use("/api/IMS/staff", staffRoute);
 //   }
 // })
 
+
+// Serve the Swagger docs at /api-docs
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 const startServer = async () => {
     try {
       app.listen(port, () => {
