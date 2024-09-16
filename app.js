@@ -12,7 +12,7 @@ require("./models")
 
 
 const corsOptions = {
-    origin: [process.env.CLIENT_URL, "*"],
+    origin: process.env.CLIENT_URL || 'http://localhost:5173',
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
     allowedHeaders: "Content-Type,Authorization",
@@ -32,6 +32,7 @@ const productRoute = require("./routes/productRoutes");
 const categoryRoute = require("./routes/categoryRoutes");
 const storeRoute = require("./routes/storeRoutes");
 const salesRecordRoute = require("./routes/salesRoutes");
+const staffRoute = require("./routes/staffRoutes");
 
 app.use("/api/IMS/user", userRoute);
 app.use("/api/IMS/profile", profileRoute);
@@ -39,6 +40,7 @@ app.use("/api/IMS/product", productRoute);
 app.use("/api/IMS/category", categoryRoute);
 app.use("/api/IMS/store", storeRoute);
 app.use("/api/IMS/sales", salesRecordRoute);
+app.use("/api/IMS/staff", staffRoute);
 
 
 
@@ -50,6 +52,10 @@ app.use("/api/IMS/sales", salesRecordRoute);
 //     console.error("failed to update tasks", error.message)
 //   }
 // })
+
+
+// Serve the Swagger docs at /api-docs
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 const startServer = async () => {
     try {

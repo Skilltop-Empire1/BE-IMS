@@ -1,5 +1,4 @@
 const { DataTypes } = require("sequelize");
-
 const sequelize = require("../config/db");
 
 // Import models
@@ -9,8 +8,9 @@ const Product = require("./Product")(sequelize, DataTypes);
 const Category = require("./Category")(sequelize, DataTypes);
 const Store = require("./Store")(sequelize, DataTypes);
 const SalesRecord = require("./SalesRecord")(sequelize, DataTypes);
+const Staff = require("./staff")(sequelize, DataTypes);
 
-
+// Define the db object with models and sequelize
 const db = {
   sequelize,
   User,
@@ -19,16 +19,14 @@ const db = {
   Category,
   Store,
   SalesRecord,
- 
+  Staff
 };
 
-// Export the db object containing Sequelize instance and all models
-module.exports = db;
-
-// Set up associations
+// Set up model associations
 Object.keys(db).forEach((modelName) => {
   if (db[modelName].associate) {
     db[modelName].associate(db);
   }
 });
 
+module.exports = db;
