@@ -12,7 +12,7 @@ require("./models")
 
 
 const corsOptions = {
-    origin: [/*process.env.CLIENT_URL,*/ "*"],
+    origin: process.env.CLIENT_URL || 'http://localhost:5173',
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
     allowedHeaders: "Content-Type,Authorization",
