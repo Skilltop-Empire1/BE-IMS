@@ -12,6 +12,17 @@ const nodemailer = require("nodemailer");
 //************* User Object ***************** */
 
 class UserObject {
+//get all users
+  getAllUsers = async (req, res)=>{
+    const getUsers = await userModel.User.findAll();
+    try {
+      if(getUsers){
+        return res.json(getUsers)
+      }
+    } catch (error) {
+      throw error
+    }
+  }
   //*********** reset passwords  ********/
 
   passwordReset = async (req, res) => {
@@ -35,14 +46,17 @@ class UserObject {
       const passwordLink = "www.gmail.com";
       const randomText = await randompassword.generateRandomPassword(50);
       const transporter = nodemailer.createTransport({
-        service: "gmail",
-        host: "smtp.gmail.com",
+        // service: "gmail",
+        host: "mail.skilltopims.com",
         port: 587,
         secure: false,
         auth: {
           user: process.env.EMAIL_USER,
           pass: process.env.EMAIL_PASS,
         },
+        tls: {
+          rejectUnauthorized: false
+        }
       });
 
       const mailOptions = {
@@ -70,10 +84,14 @@ class UserObject {
 
   resetSubmit = async (req, res) => {
     const { email, password, confirmPassword } = req.body;
-
+//validate details
     const { error } = userschema.validatePasswordReset.validate(req.body);
     if (error) {
       return res.status(404).json(error.details[0].message);
+    }
+    const user = await userModel.User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(400).send("Enter a correct email address");
     }
     if (password !==confirmPassword){
       return res.json({msg: "Password mismatch"})
@@ -90,6 +108,7 @@ class UserObject {
         console.log(updatePassword);
         res.status(201).json({ msg: "Password updated successfully" });
         // return res.redirect('https://www.example.com')
+        return
       }
     } catch (error) {
       throw error;
@@ -192,10 +211,13 @@ class UserObject {
     res.send(`Welcome`);
   }
 
-  // app.post('/logout', (req, res) => {
-  //   // Invalidate the token on client side (no server-side action needed)
-  //   res.send('Logged out successfully.'); // Inform the user
-  // });
+
+  logout = async (re, res)=>{
+
+    req.logout()
+    res.send('Logged out successfully.'); // Inform the user
+  }
+
 }
 
 //********** instance of the UserObject ********** */
