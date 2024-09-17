@@ -10,7 +10,7 @@ exports.createProductSchema = Joi.object({
   quantity: Joi.number().required(),
   categoryId: Joi.number().required(),
   storeId: Joi.number().required(),
-  storeAvailable: Joi.string().valid('storeA', 'storeB', 'storeC').required(),
+  storeAvailable: Joi.string().required(),
   prodDate: Joi.date().optional(),
 });
 
