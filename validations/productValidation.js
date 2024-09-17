@@ -24,7 +24,7 @@ exports.updateProductSchema = Joi.object({
   quantity: Joi.number().optional(),
   categoryId: Joi.number().optional(),
   storeId: Joi.number().optional(),
-  storeAvailable: Joi.string().valid('storeA', 'storeB', 'storeC').optional(),
+  storeAvailable: Joi.string().optional(),
   prodDate: Joi.date().optional(),
 });
 
