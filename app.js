@@ -3,13 +3,14 @@ require("dotenv").config()
 const morgan = require("morgan")
 const cors = require("cors")
 const app = express()
-// const bodyParser = require('body-parser')
 require("./models")
-
+const {  swaggerUi,swaggerSpec} = require("./swagger")
+// const swaggerUi = require('swagger-ui-express');
+// const swaggerJsDoc = require('swagger-jsdoc'); 
 
 
 const corsOptions = {
-    origin: [process.env.CLIENT_URL, "*"],
+    origin: process.env.CLIENT_URL || 'http://localhost:5173',
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
     allowedHeaders: "Content-Type,Authorization",
@@ -29,6 +30,9 @@ const productRoute = require("./routes/productRoutes");
 const categoryRoute = require("./routes/categoryRoutes");
 const storeRoute = require("./routes/storeRoutes");
 const salesRecordRoute = require("./routes/salesRoutes");
+const staffRoute = require("./routes/staffRoutes");
+const errorHandler = require("./error/errorHandler")
+const notFoundError = require("./error/notFoundError")
 
 app.use("/api/IMS/user", userRoute);
 app.use("/api/IMS/profile", profileRoute);
@@ -36,8 +40,27 @@ app.use("/api/IMS/product", productRoute);
 app.use("/api/IMS/category", categoryRoute);
 app.use("/api/IMS/store", storeRoute);
 app.use("/api/IMS/sales", salesRecordRoute);
+app.use("/api/IMS/staff", staffRoute);
 
 
+
+// cron.schedule('*/2 * * * *', async ()=> {
+//   try {
+//     const response = await axios.get(process.env.BACKEND_SERVER)
+//     console.log("update successful", response.status)
+//   } catch (error) {
+//     console.error("failed to update tasks", error.message)
+//   }
+// })
+
+
+// Serve the Swagger docs at /api-docs
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+//for underfined routes
+app.use(notFoundError)
+//global error hander
+app.use(errorHandler)
 
 const startServer = async () => {
     try {
