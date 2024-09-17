@@ -191,7 +191,13 @@ class UserObject {
         // const token = 
         return jwt.sign({ email}, process.env.SECRET_KEY, { expiresIn: '1h' }, (err, token)=>{
           // res.json({ token });
-          res.json({ message: 'Login successful', token });
+          res.json({ 
+            message: 'Login successful', 
+            token,
+          user :{
+            id: user.id,
+            email: user.email
+          } });
         });
 
         // res.cookie("token", token, {
@@ -214,8 +220,7 @@ class UserObject {
 
   logout = async (re, res)=>{
 
-    req.logout()
-    res.send('Logged out successfully.'); // Inform the user
+    res.json({msg:'Logged out successfully.'}); // Inform the user
   }
 
 }
