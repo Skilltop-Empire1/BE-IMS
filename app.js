@@ -3,12 +3,10 @@ require("dotenv").config()
 const morgan = require("morgan")
 const cors = require("cors")
 const app = express()
-const cron = require("node-cron")
-const axios = require("axios")
-const {swaggerUi,swaggerSpec} =  require("./swagger")
-
 require("./models")
-
+const {  swaggerUi,swaggerSpec} = require("./swagger")
+// const swaggerUi = require('swagger-ui-express');
+// const swaggerJsDoc = require('swagger-jsdoc'); 
 
 
 const corsOptions = {

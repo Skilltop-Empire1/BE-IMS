@@ -1,0 +1,30 @@
+As a user, I want to be able to sign in to the IMS so that I can 
+access the system's features and manage inventory.
+
+When I enter my username and password in the respective fields on
+ the sign in page and click on "Sign In" button as seen 
+
+Open Sign In-20240711-202511.png
+Sign In-20240711-202511.png
+Then the system verifies my credentials and grants me access to the
+ IMS if they are correct.
+
+If my credentials are incorrect, the system displays an error 
+message indicating that the username or password is invalid.
+
+It will prompt me to the “Forget password” page where I will be 
+asked to reset my password by providing the email address used to sign-up
+
+I will get an email notification with the new password/ computer 
+generated password.
+
+Once the new password is inputted, it will re-direct me to change my 
+password.
+
+If the new credentials provided is correct, I should will be directed
+ to the “Home page
+
+If user has no account or the system cannot recognize the email 
+entered, user should be prompted/directed to sign up page on the right.
+
+Attachments
