@@ -16,6 +16,13 @@ class UserObject {
 
   passwordReset = async (req, res) => {
     const { email } = req.body;
+
+    const { error } = userschema.resetLink.validate(req.body);
+    if (error) {
+      return res.status(404).json(error.details[0].message);
+    }
+
+
     const user = await userModel.User.findOne({
       where: { email },
     });
@@ -26,7 +33,7 @@ class UserObject {
       }
 
       const passwordLink = "www.gmail.com";
-      const randomText = await randompassword.generateRandomPassword();
+      const randomText = await randompassword.generateRandomPassword(50);
       const transporter = nodemailer.createTransport({
         service: "gmail",
         host: "smtp.gmail.com",
@@ -43,14 +50,14 @@ class UserObject {
           name: "IMS",
           address: process.env.EMAIL_USER,
         },
-        to: "jakpan64@yahoo.com", //req.body.email,
+        to: email,//"jakpan64@yahoo.com", //req.body.email,
         subject: "IMS Reset link",
         text: `Click on the link to proceed with the password resert: ${passwordLink}`,
         html: `<a href='https://example.com'>Click here to reset your password: ${randomText}</a>,`, // html body
       };
 
       res.json({
-        msg: "An email has been sent to you with a link to reset your password. If not seen in you inbox, please chech your spam.",
+        msg: "An email has been sent to you with a link to reset your password. If not seen in your inbox, please check your spam.",
       });
 
       return await transporter.sendMail(mailOptions);
@@ -62,7 +69,15 @@ class UserObject {
   //**********route to submit reset password and redirect to login */
 
   resetSubmit = async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, confirmPassword } = req.body;
+
+    const { error } = userschema.validatePasswordReset.validate(req.body);
+    if (error) {
+      return res.status(404).json(error.details[0].message);
+    }
+    if (password !==confirmPassword){
+      return res.json({msg: "Password mismatch"})
+    }
     const hash = await bcrypt.hash(password, 10);
     const updatePassword = await userModel.User.update(
       { password: hash },
@@ -157,6 +172,7 @@ class UserObject {
         // const token = 
         return jwt.sign({ email}, process.env.SECRET_KEY, { expiresIn: '1h' }, (err, token)=>{
           // res.json({ token });
+          res.json({ message: 'Login successful', token });
         });
 
         // res.cookie("token", token, {
@@ -169,6 +185,17 @@ class UserObject {
       res.status(500).json({ message: 'Server error' });
     }
   };
+
+  homePage = async (req, res) =>{
+    
+    // Protected route example
+    res.send(`Welcome`);
+  }
+
+  // app.post('/logout', (req, res) => {
+  //   // Invalidate the token on client side (no server-side action needed)
+  //   res.send('Logged out successfully.'); // Inform the user
+  // });
 }
 
 //********** instance of the UserObject ********** */
