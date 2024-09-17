@@ -19,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       references: { model: 'Stores', key: 'storeId' },
     },
-    storeAvailable: { type: DataTypes.ENUM('storeA', 'storeB', 'storeC') },
+    storeAvailable: { type: DataTypes.STRING },
     prodDate: { type: DataTypes.DATE },
   });
 
