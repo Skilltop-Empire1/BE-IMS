@@ -8,6 +8,7 @@ const loginAuthourization = require("../middlewares/authMiddleware");
 const jwt = require("jsonwebtoken");
 const randompassword = require("../middlewares/passwordResetMiddleware");
 const nodemailer = require("nodemailer");
+const {loginJWTAthentication} = require("../middlewares/authMiddleware")
 
 //************* User Object ***************** */
 
@@ -189,11 +190,12 @@ class UserObject {
 
          // ******************Create JWT token ***********************
         // const token = 
-        return jwt.sign({ email}, process.env.SECRET_KEY, { expiresIn: '1h' }, (err, token)=>{
+        return jwt.sign({email}, process.env.SECRET_KEY, { expiresIn: '1h' }, (err, token)=>{
           // res.json({ token });
           res.json({ 
-            message: 'Login successful', 
             token,
+            message: 'Login successful', 
+        
           user :{
             id: user.id,
             email: user.email
