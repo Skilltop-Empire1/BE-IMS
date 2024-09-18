@@ -3,12 +3,10 @@ require("dotenv").config()
 const morgan = require("morgan")
 const cors = require("cors")
 const app = express()
-const cron = require("node-cron")
-const axios = require("axios")
-const {swaggerUi,swaggerSpec} =  require("./swagger")
-
 require("./models")
-
+const {  swaggerUi,swaggerSpec} = require("./swagger")
+// const swaggerUi = require('swagger-ui-express');
+// const swaggerJsDoc = require('swagger-jsdoc'); 
 
 
 const corsOptions = {
@@ -33,6 +31,8 @@ const categoryRoute = require("./routes/categoryRoutes");
 const storeRoute = require("./routes/storeRoutes");
 const salesRecordRoute = require("./routes/salesRoutes");
 const staffRoute = require("./routes/staffRoutes");
+const errorHandler = require("./error/errorHandler")
+const notFoundError = require("./error/notFoundError")
 
 app.use("/api/IMS/user", userRoute);
 app.use("/api/IMS/profile", profileRoute);
@@ -56,6 +56,11 @@ app.use("/api/IMS/staff", staffRoute);
 
 // Serve the Swagger docs at /api-docs
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+//for underfined routes
+app.use(notFoundError)
+//global error hander
+app.use(errorHandler)
 
 const startServer = async () => {
     try {

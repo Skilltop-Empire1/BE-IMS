@@ -10,7 +10,7 @@ exports.createProductSchema = Joi.object({
   quantity: Joi.number().required(),
   categoryId: Joi.number().required(),
   storeId: Joi.number().required(),
-  storeAvailable: Joi.string().valid('storeA', 'storeB', 'storeC').required(),
+  storeAvailable: Joi.string().required(),
   prodDate: Joi.date().optional(),
 });
 
@@ -24,7 +24,7 @@ exports.updateProductSchema = Joi.object({
   quantity: Joi.number().optional(),
   categoryId: Joi.number().optional(),
   storeId: Joi.number().optional(),
-  storeAvailable: Joi.string().valid('storeA', 'storeB', 'storeC').optional(),
+  storeAvailable: Joi.string().optional(),
   prodDate: Joi.date().optional(),
 });
 

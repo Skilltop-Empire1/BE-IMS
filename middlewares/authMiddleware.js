@@ -1,46 +1,54 @@
+//********import lib rarides */
 const jwt = require("jsonwebtoken");
-const rolesPermissions = require("../utils/rolePermission");
+require("dotenv").config()
+const userModel = require("../models/index");
 
-const loginJWTAthentication = (req, res, next) => {
-  const authHeader = req.headers["authorization"];
-  let token;
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    token = authHeader.split(" ")[1]; 
-  }
-  if (!token && req.cookies && req.cookies.token) {
-    token = req.cookies.token;
-  }
-  if (token) {
-    jwt.verify(token, process.env.JWT_SECRET_KEY, (err, user) => {
+
+const loginJWTAthentication = async (req, res, next) => {
+  // Middleware for protected routes
+  // const token = req.header('x-auth-token') // Get token from Authorization header
+  
+  const token = req.headers['authorization']?.split(' ')[1];
+  if (!token) return res.status(401).json({ message: "Access denied" });
+
+  try {
+     // Verify the token
+     jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
       if (err) {
-        return res.status(403).json({ message: "Invalid or expired token" });
+          return res.status(401).json({ message: 'Unauthorized! Token is invalid.' });
       }
-      req.user = user; 
+      req.useremail = decoded.email;
       next();
-    });
-  } else {
-    res.status(401).json({ message: "No token provided, unauthorized" });
+    // jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    //   if (err) return res.status(403).send('Invalid token.');
+    //   req.user = user; // Attach user info to request
+    //   next()
+    })
+  } catch (err) {
+    console.log(error)
+    res.status(401).json({ msg: "not authorized" });
   }
 };
 
-// Authorization middleware
-const permission = (action) => {
-    return (req, res, next) => {
-      const userRole = req.user.role; 
-  
-      if (rolesPermissions[userRole] && rolesPermissions[userRole].includes(action)) {
-        return next(); 
-      }
-  
-      return res.status(403).json({ message: 'Forbidden: You do not have the required permission' });
-    };
-  };
-
-
-module.exports = {loginJWTAthentication,permission};
+module.exports = loginJWTAthentication
 
 
 
+// auth.js
+// const jwt = require('jsonwebtoken');
+// const dotenv = require('dotenv');
 
+// dotenv.config();
 
+// const verifyToken = (req, res, next) => {
+//   const token = req.headers['authorization']?.split(' ')[1]; // Get token from Authorization header
+//   if (!token) return res.status(403).send('Token is required.');
 
+//   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+//     if (err) return res.status(403).send('Invalid token.');
+//     req.user = user; // Attach user info to request
+//     next();
+//   });
+// };
+
+// module.exports = verifyToken;
