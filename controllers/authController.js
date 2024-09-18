@@ -190,16 +190,12 @@ class UserObject {
 
          // ******************Create JWT token ***********************
         // const token = 
-        return jwt.sign({email}, process.env.SECRET_KEY, { expiresIn: '1h' }, (err, token)=>{
+        return jwt.sign({id: user.id, email: user.email, role: user.role}, process.env.SECRET_KEY, { expiresIn: '1h' }, (err, token)=>{
           // res.json({ token });
           res.json({ 
             token,
             message: 'Login successful', 
-        
-          user :{
-            id: user.id,
-            email: user.email
-          } });
+          });
         });
 
         // res.cookie("token", token, {
