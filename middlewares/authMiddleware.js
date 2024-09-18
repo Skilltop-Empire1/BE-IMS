@@ -1,54 +1,26 @@
 //********import lib rarides */
 const jwt = require("jsonwebtoken");
-require("dotenv").config()
+require("dotenv").config();
 const userModel = require("../models/index");
 
-
 const loginJWTAthentication = async (req, res, next) => {
-  // Middleware for protected routes
-  // const token = req.header('x-auth-token') // Get token from Authorization header
-  
-  const token = req.headers['authorization']?.split(' ')[1];
+  const token = req.headers["authorization"]?.split(" ")[1];
   if (!token) return res.status(401).json({ message: "Access denied" });
-
   try {
-     // Verify the token
-     jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+    // Verify the token
+    jwt.verify(token, process.env.SECRET_KEY, (err, user) => {
       if (err) {
-          return res.status(401).json({ message: 'Unauthorized! Token is invalid.' });
+        return res
+          .status(401)
+          .json({ message: "Unauthorized! Token is invalid." });
       }
-      req.useremail = decoded.email;
+      req.user = user;
       next();
-    // jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    //   if (err) return res.status(403).send('Invalid token.');
-    //   req.user = user; // Attach user info to request
-    //   next()
-    })
+    });
   } catch (err) {
-    console.log(error)
+    console.log(err);
     res.status(401).json({ msg: "not authorized" });
   }
 };
 
-module.exports = loginJWTAthentication
-
-
-
-// auth.js
-// const jwt = require('jsonwebtoken');
-// const dotenv = require('dotenv');
-
-// dotenv.config();
-
-// const verifyToken = (req, res, next) => {
-//   const token = req.headers['authorization']?.split(' ')[1]; // Get token from Authorization header
-//   if (!token) return res.status(403).send('Token is required.');
-
-//   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-//     if (err) return res.status(403).send('Invalid token.');
-//     req.user = user; // Attach user info to request
-//     next();
-//   });
-// };
-
-// module.exports = verifyToken;
+module.exports = loginJWTAthentication;
