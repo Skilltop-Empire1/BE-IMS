@@ -272,8 +272,44 @@ exports.filterByLocation = async (req, res) => {
     }
 };
 
+exports.getStoreOverview = async (req, res) => {
+    try {
+      // Fetch all stores
+      const stores = await Store.findAll({
+        include: [
+          {
+            model: Product,
+            attributes: ['quantity', 'price'],  // Fetch quantity and price for stock calculations
+          },
+        ],
+      });
+  
+      
+      const storeOverview = stores.map(store => {
+        const totalItems = store.Products.reduce((acc, product) => acc + product.quantity, 0); // Total items
+        const totalStockValue = store.Products.reduce((acc, product) => acc + (product.price * product.quantity), 0); // Total stock value
 
+        return {
+          storeId: store.storeId,
+          storeName: store.storeName,
+          totalItems: totalItems || 'Not assigned',  // In case there's no data
+          totalStockValue: totalStockValue || 'Not assigned', // In case there's no data
+          noOfStaff: store.noOfStaff || 'Not assigned',  // Use staff count from the Store model
+        };
+      });
 
+      return res.status(200).json({
+        success: true,
+        data: storeOverview,
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({
+        success: false,
+        message: 'Server Error',
+      });
+    }
+  };
 
 // Delete store by ID (THIS FNCTION IS NOT USED IN THE CURRENT PROJ BUT IS HERE JUST IN CASE)
 exports.deleteStoreById = async (req, res) => {

@@ -8,7 +8,7 @@ router.get('/all',  storeController.getAllStores);
 router.get('/:storeId/info', storeController.getStoreInfo);
 router.get('/search', storeController.searchStore);
 router.get('/filter', storeController.filterByLocation);
-
+router.get('/overview', storeController.getStoreOverview);
 
 
 //CREATE A TEMPORARY USER TO TEST
