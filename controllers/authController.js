@@ -134,10 +134,16 @@ class UserObject {
       },
     });
 
+    const staffExist = await userModel.Staff.findOne({
+      where: {
+        [Op.or]: [{ userName: userName }, { email: email }],
+      },
+    });
+
     /******hash password***** */
     const hashedPassword = await bcrypt.hash(password, 10);
     try {
-      if (userExist) {
+      if (userExist||staffExist) {
         return res
           .status(404)
           .json({ msg: "A User with these details already Exist" });
@@ -178,25 +184,23 @@ class UserObject {
     }
 
     //************check for user ************ */
-    const user = await userModel.User.findOne({ where: { email } });
-    if (!user) {
+    const user = await userModel.User.findOne({ where: { email } }); 
+    const staff = await userModel.Staff.findOne({ where: { email } });
+    if (!user||staff) {
       return res.status(400).send("Email is not registered");
     }
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, user.password || staff.password);
     try {
       if (!isMatch) {
         return res.status(404).json({ msg: "Incorrect login details" });
       } else {
 
          // ******************Create JWT token ***********************
-        // const token = 
-        return jwt.sign({id: user.id, email: user.email, role: user.role}, process.env.SECRET_KEY, { expiresIn: '1h' }, (err, token)=>{
-          // res.json({ token });
-          res.json({ 
-            token,
-            message: 'Login successful', 
-          });
-        });
+        const token = jwt.sign({id: user.userId, email: user.email, role: user.role}, process.env.SECRET_KEY, { expiresIn: '1h' })
+        res.json({id: token.id });
+        
+          
+      
 
         // res.cookie("token", token, {
         //   httpOnly: true,
