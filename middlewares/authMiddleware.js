@@ -4,7 +4,12 @@ require("dotenv").config();
 const userModel = require("../models/index");
 
 const loginJWTAthentication = async (req, res, next) => {
-  const token = req.header('Authorization')?.split(' ')[1];
+  const authHeader = req.header('Authorization');
+  let token
+  if (authHeader && authHeader.startsWith('Bearer')){
+    token = authHeader.split(" ")[1]
+  }
+
   if (!token) {
     return res.status(401).json({ message: "Access denied" });
   }
@@ -20,13 +25,15 @@ const loginJWTAthentication = async (req, res, next) => {
     // }
     // If using email to find the user
     const user = await userModel.User.findOne({ email: verify.email });
-    if(!user) return res.status(401).json({msg: 'User not found'})
-    req.user = user
-    if (!req.user) {
-      console.log(req.user)
-      return res.status(401).json({ error: "Invalid token. User not found" });
+    if (!user){
+      const staff =await userModel.Staff.findOne({email})
+      if(!staff){
+        return res.status(401).json({msg: "staff token not found"})
+      }
+      req.user = staff
+    }else{
+      req.user = user
     }
-
     next();  
   } catch (err) {
     console.log(err);

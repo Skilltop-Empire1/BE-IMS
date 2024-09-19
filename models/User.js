@@ -7,7 +7,7 @@ module.exports = (sequelize, DataTypes) => {
     role: {
       type: DataTypes.STRING,
       allowNull: true, 
-      DefaultValue: "superAdmin"
+      defaultValue: "superAdmin"
     },
     password: { type: DataTypes.STRING, allowNull: false },
     email: { type: DataTypes.STRING, allowNull: false, unique: true },
