@@ -52,6 +52,51 @@ const categoryController = require('../controllers/categoryController');
  *         description: Invalid input
  */
 router.post('/', categoryController.createCategory);
+/**
+ * @swagger
+ * /filter:
+ *   get:
+ *     summary: Retrieve all categories with filters
+ *     description: This endpoint allows you to retrieve all categories based on specific filters.
+ *     tags:
+ *       - Categories
+ *     parameters:
+ *       - in: query
+ *         name: storeId
+ *         schema:
+ *           type: integer
+ *         description: Optional store ID to filter categories by store
+ *       - in: query
+ *         name: categoryName
+ *         schema:
+ *           type: string
+ *         description: Optional category name to filter by name
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved the list of categories
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   categoryId:
+ *                     type: integer
+ *                     description: The category ID
+ *                   categoryName:
+ *                     type: string
+ *                     description: The name of the category
+ *                   storeId:
+ *                     type: integer
+ *                     description: The ID of the store the category belongs to
+ *       404:
+ *         description: No categories found
+ *       500:
+ *         description: Server error
+ */
+
+router.get("/filter", categoryController.filterAllCategory);
 
 /**
  * @swagger
@@ -235,6 +280,8 @@ router.get('/store/:storeId', categoryController.getCategoriesByStore);
  */
 router.get('/:catId/products', categoryController.getProductsByCategory);
 
-module.exports = router;
+
+
 
 module.exports = router;
+

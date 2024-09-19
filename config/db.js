@@ -57,6 +57,8 @@
 const { Sequelize } = require("sequelize");
 require("dotenv").config(); 
 
+
+
 const CONFIG = {
   DB_NAME: process.env.DB_NAME,
   DB_USERNAME: process.env.DB_USERNAME,
@@ -74,17 +76,12 @@ const sequelize = new Sequelize(
   CONFIG.DB_PASSWORD,
   {
     host: CONFIG.DB_HOST,
-    dialect: CONFIG.DB_DIALECT,
-    port: CONFIG.DB_PORT,
-    logging: false,
-    dialectOptions: CONFIG.DB_USE_SSL
-      ? {
-          ssl: {
-            require: true,
-            rejectUnauthorized: false,
-          },
-        }
-      : {}, // If not using SSL, leave it empty
+    dialect: CONFIG.DB_DIALECT, 
+    // port: CONFIG.DB_PORT,
+    // logging: false, 
+    // dialectOptions: {
+    //   connectTimeout: 60000, 
+    // },
   }
 );
 
@@ -93,7 +90,7 @@ const initializeDatabase = async () => {
     await sequelize.authenticate();
     console.log("Connection to PostgreSQL database successful");
 
-    await sequelize.sync({ alter: true });
+    await sequelize.sync({ force: false }); 
     console.log("Database synchronized successfully");
   } catch (error) {
     console.error("Unable to connect to the PostgreSQL database:", error);
