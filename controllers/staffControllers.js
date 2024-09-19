@@ -144,7 +144,6 @@ const inviteStaff = async (req, res) => {
 
 
       const newStaff = await Staff.create({
-        username,
         email,
         password, 
         addedDate: new Date(),
