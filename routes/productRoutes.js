@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
 const upload = require("../middlewares/multer")
+const loginJWTAthentication = require("../middlewares/authMiddleware")
 
 
 
@@ -81,7 +82,7 @@ router.post('/', upload.single("image"), productController.createProduct);
  *                   storeId:
  *                     type: string
  */
-router.get('/', productController.getAllProducts);
+router.get('/',loginJWTAthentication, productController.getAllProducts);
 
 /**
  * @swagger
