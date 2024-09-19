@@ -186,7 +186,7 @@ class UserObject {
     //************check for user ************ */
     const user = await userModel.User.findOne({ where: { email } }); 
     const staff = await userModel.Staff.findOne({ where: { email } });
-    if (!user||staff) {
+    if (!user||!staff) {
       return res.status(400).send("Email is not registered");
     }
     const isMatch = await bcrypt.compare(password, user.password || staff.password);
