@@ -136,7 +136,7 @@ class UserObject {
 
     const staffExist = await userModel.Staff.findOne({
       where: {
-        [Op.or]: [{ userName: userName }, { email: email }],
+        [Op.or]: [{ username: userName }, { email: email }],
       },
     });
 
