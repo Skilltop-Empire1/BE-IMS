@@ -186,9 +186,13 @@ class UserObject {
     //************check for user ************ */
     const user = await userModel.User.findOne({ where: { email } }); 
     const staff = await userModel.Staff.findOne({ where: { email } });
-    if (!user||!staff) {
+    if (!user && !staff) {
       return res.status(400).send("Email is not registered");
     }
+
+    const account = user || staff
+
+
     const isMatch = await bcrypt.compare(password, user.password || staff.password);
     try {
       if (!isMatch) {
@@ -196,8 +200,9 @@ class UserObject {
       } else {
 
          // ******************Create JWT token ***********************
-        const token = jwt.sign({id: user.userId, email: user.email, role: user.role}, process.env.SECRET_KEY, { expiresIn: '1h' })
-        res.json({id: token.id });
+
+        const token = jwt.sign({id: user.userId|| staff.staffId, email: account.email, role: account.role}, process.env.SECRET_KEY, { expiresIn: '1h' })
+        res.json({token, id: account.id, email: account.email, role:account.role });
         
           
       
