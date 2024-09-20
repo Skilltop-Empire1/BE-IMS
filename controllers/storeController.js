@@ -2,58 +2,61 @@
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path'); 
+const cloudinary = require('../config/cloudinary');
 const { storeSchema } = require('../validations/storeValidation');
 const { Store , Product, SalesRecord, Category,User} = require('../models');
 const { validatePhoneNumber } = require('../validations/numberValidator');
 const { Op, Sequelize } = require('sequelize');// Only import Op from Sequelize
+const { v4: uuidv4 } = require('uuid');
+// const cloudinary = require('cloudinary').v2;
 
 const sequelize = Sequelize;
-
+const storage = multer.memoryStorage();
 // Ensure uploads directory exists
-const uploadDir = path.join(__dirname, '../uploads');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
+// const uploadDir = path.join(__dirname, '../uploads');
+// if (!fs.existsSync(uploadDir)) {
+//     fs.mkdirSync(uploadDir, { recursive: true });
+// }
 
-// Set up multer for file storage
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadDir); // Use the dynamically created directory
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname)); // Append the file extension
-    }
-});
+// // Set up multer for file storage
+// const storage = multer.diskStorage({
+//     destination: (req, file, cb) => {
+//         cb(null, uploadDir); // Use the dynamically created directory
+//     },
+//     filename: (req, file, cb) => {
+//         cb(null, Date.now() + path.extname(file.originalname)); // Append the file extension
+//     }
+// });
 
 const upload = multer({
     storage: storage,
     fileFilter: (req, file, cb) => {
-        const allowedTypes = /jpeg|jpg|png/;
-        const mimeType = allowedTypes.test(file.mimetype);
-        const extName = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-
-        if (mimeType && extName) {
-            return cb(null, true);
-        } else {
-            cb(new Error('Invalid file type. Only JPEG, JPG, and PNG are allowed.'));
-        }
+      const allowedTypes = /jpeg|jpg|png/;
+      const mimeType = allowedTypes.test(file.mimetype);
+      const extName = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  
+      if (mimeType && extName) {
+        return cb(null, true);
+      } else {
+        cb(new Error('Invalid file type. Only JPEG, JPG, and PNG are allowed.'));
+      }
     }
-}).single('storePhoto');
-
-// Create store with image upload
-exports.createStore = async (req, res) => {
+  }).single('storePhoto');
+  
+  // Create store with image upload
+  exports.createStore = async (req, res) => {
     upload(req, res, async (err) => {
-        if (err instanceof multer.MulterError) {
-            return res.status(400).json({ error: 'File upload error: ' + err.message });
-        } else if (err) {
-            return res.status(400).json({ error: err.message });
+      if (err instanceof multer.MulterError) {
+        return res.status(400).json({ error: 'File upload error: ' + err.message });
+      } else if (err) {
+        return res.status(400).json({ error: err.message });
+      }
+      try {
+        // Validate the request body
+        const { error } = storeSchema.validate(req.body);
+        if (error) {
+          return res.status(400).json({ error: error.details[0].message });
         }
-        try {
-            // Validate the request body using the imported storeSchema
-            const { error } = storeSchema.validate(req.body);
-            if (error) {
-                return res.status(400).json({ error: error.details[0].message });
-            }
 
             const { userId, storeName, location, storeContact, description, noOfStaff, storeManager } = req.body;
 
@@ -72,10 +75,22 @@ exports.createStore = async (req, res) => {
             }
 
             // If image was uploaded, save its file path
-            let storePhoto = null;
-            if (req.file) {
-                storePhoto = req.file.path; // Save the file path in the database
-            }
+            // let storePhoto = null;
+            // if (req.file) {
+            //     storePhoto = req.file.path; // Save the file path in the database
+            // }
+
+             // If image was uploaded, save its Cloudinary URL
+      let storePhoto = null;
+      if (req.file) {
+        const result = await new Promise((resolve, reject) => {
+          cloudinary.uploader.upload_stream({ public_id: uuidv4() }, (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+          }).end(req.file.buffer);
+        });
+        storePhoto = result.secure_url;
+      }
 
             // Create the store in the database
             const store = await Store.create({
@@ -99,6 +114,7 @@ exports.createStore = async (req, res) => {
 
 exports.getAllStores = async (req, res) => {
     try {
+        // console.log("userId",req.user.dataValues.userId);
         const stores = await Store.findAll();
         res.json(stores);
 
@@ -204,6 +220,98 @@ exports.getStoreInfo = async (req, res) => {
     }
 };
 
+exports.searchStore = async (req, res) => {
+    const query = req.query.query;
+
+    // Validate query parameter
+    if (!query) {
+        return res.status(400).json({ error: 'Search query parameter is required.' });
+    }
+
+    // Sanitize query to prevent SQL injection (though Sequelize should handle this)
+    const sanitizedQuery = query.trim();
+
+    // Check if query is not empty after trimming
+    if (sanitizedQuery === '') {
+        return res.status(400).json({ error: 'Search query cannot be empty.' });
+    }
+
+    try {
+        // Perform the search
+        const stores = await Store.findAll({
+            where: {
+                storeName: {
+                    [Op.like]: `%${sanitizedQuery}%`
+                }
+            }
+        });
+
+        // Handle case where no results are found
+        if (stores.length === 0) {
+            return res.status(404).json({ message: 'No stores found matching the query.' });
+        }
+
+        // Return the found stores
+        res.status(200).json(stores);
+    } catch (error) {
+        // Handle any errors that occur during the search
+        console.error('Error searching for stores:', error);
+        res.status(500).json({ error: 'An error occurred while searching for stores. Please try again later.' });
+    }
+};
+
+
+exports.filterByLocation = async (req, res) => {
+    try {
+        // Fetch all stores and get unique locations
+        const stores = await Store.findAll({ attributes: ['location'] }); // Only get the 'location' field
+        const locations = [...new Set(stores.map(store => store.location))]; // Remove duplicates
+        
+        res.status(200).json(locations);
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching locations' });
+    }
+};
+
+exports.getStoreOverview = async (req, res) => {
+    try {
+      // Fetch all stores
+      const stores = await Store.findAll({
+        include: [
+          {
+            model: Product,
+            attributes: ['quantity', 'price'],  // Fetch quantity and price for stock calculations
+          },
+        ],
+      });
+  
+      
+      const storeOverview = stores.map(store => {
+        const totalItems = store.Products.reduce((acc, product) => acc + product.quantity, 0); // Total items
+        const totalStockValue = store.Products.reduce((acc, product) => acc + (product.price * product.quantity), 0); // Total stock value
+
+        return {
+          storeId: store.storeId,
+          storeName: store.storeName,
+          totalItems: totalItems || 'Not assigned',  // In case there's no data
+          totalStockValue: totalStockValue || 'Not assigned', // In case there's no data
+          noOfStaff: store.noOfStaff || 'Not assigned',  // Use staff count from the Store model
+        };
+      });
+
+      return res.status(200).json({
+        success: true,
+        data: storeOverview,
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({
+        success: false,
+        message: 'Server Error',
+      });
+    }
+  };
+
 // Delete store by ID (THIS FNCTION IS NOT USED IN THE CURRENT PROJ BUT IS HERE JUST IN CASE)
 exports.deleteStoreById = async (req, res) => {
     const storeId = req.params.storeId; // Extract store ID from request parameters
@@ -307,6 +415,3 @@ exports.createTemporaryUserForTest = async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
-
-
-

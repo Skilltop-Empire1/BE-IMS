@@ -137,12 +137,15 @@ const deleteStaff = async (req, res) => {
 // Create staff (Invite staff)
 const inviteStaff = async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { email, password,username} = req.body;
       if (!email || !password) {
         return res.status(400).json({ message: 'Email and password are required' });
       }
-
-
+      const existingStaff = await Staff.findOne({ where: { email: email } });
+      if (existingStaff) {
+        return res.status(400).json({ message: 'Email already exists' });
+      }
+     
       const newStaff = await Staff.create({
         username,
         email,
@@ -157,9 +160,9 @@ const inviteStaff = async (req, res) => {
         from: "kizohills@skilltopims.com",
         to: newStaff.email,
         subject: "You have been invited as a Staff Member",
-        html: `<h2> hi ${newStaff.name}! Hello, you have been invited to
+        html: `<h2> hi ${newStaff.username}! Hello, you have been invited to
          join as a staff member. Please use this credentials 
-         to log in email ${newStaff.email} and password${newStaff.password}</h2>`
+         to log in email ${newStaff.email} and password${password}</h2>`
       }
       // sending email
       mailTransporter.sendMail(mailOption, function(error, info) {

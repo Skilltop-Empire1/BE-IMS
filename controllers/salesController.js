@@ -1,4 +1,4 @@
-const {SalesRecord}  = require("../models/");
+const {SalesRecord, Product, Store}  = require("../models/");
 const {
   salesRecordSchema,
 } = require("../salesRecordValidation");
@@ -24,7 +24,19 @@ const {
   // Get all sales records
   const getSalesRecords = async (req, res) => {
     try {
-      const salesRecords = await SalesRecord.findAll();
+    //  const salesRecords = await SalesRecord.findAll();
+      const salesRecords = await SalesRecord.findAll({
+        include: [
+          {
+            model: Product,
+            attributes: ['name'], // Include only the product name
+          },
+          {
+            model: Store,
+            attributes: ['storeName'], // Include only the store name
+          }
+        ]
+      })
       return res.status(200).json(salesRecords);
     } catch (err) {
       console.error("Error fetching sales records:", err);
