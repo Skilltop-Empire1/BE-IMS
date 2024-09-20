@@ -130,5 +130,6 @@ module.exports = {
   getSalesRecords, 
   getSalesRecordById, 
   updateSalesRecord, 
-  deleteSalesRecord
+  deleteSalesRecord,
+  getSalesRecordByProductId
 };

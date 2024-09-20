@@ -6,12 +6,15 @@ const  {
     getSalesRecords, 
     getSalesRecordById,
     updateSalesRecord, 
-    deleteSalesRecord
+    deleteSalesRecord,
+    getSalesRecordByProductId
   }  = require('../controllers/salesController');
 
 router.post('/create', createSalesRecord);
 
 router.get('/get', getSalesRecords);
+
+router.get('/product/:productId', getSalesRecordByProductId);
 
 router.get('/get/:id', getSalesRecordById);
 
