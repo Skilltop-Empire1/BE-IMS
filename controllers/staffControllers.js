@@ -89,7 +89,8 @@ const getStaffById = async (req, res) => {
 const updateStaff = async (req, res) => {
     try {
       const { id } = req.params;
-      const { status, role, permissions } = req.body;
+      const updateData = req.body
+      //const { status, role, permissions } = req.body;
 
       const staff = await Staff.findByPk(id);
 
@@ -97,7 +98,7 @@ const updateStaff = async (req, res) => {
         return res.status(404).json({ message: 'Staff not found' });
       }
 
-      await Staff.update({ status, role, permissions }, { where: { id } });
+      await Staff.update(updateData , { where: { staffId: id } });
 
       const updatedStaff = await Staff.findByPk(id);
       return res.status(200).json({
@@ -105,11 +106,10 @@ const updateStaff = async (req, res) => {
        // firstName: updatedStaff.username.split(' ')[0],
        // lastName: updatedStaff.username.split(' ')[1],
         email: updatedStaff.email,
-        role: {
-          id: updatedStaff.role,
-          name: updatedStaff.role,
+          role: updatedStaff.role,
+          name: updatedStaff.name,
           permissions: updatedStaff.permissions,
-        },
+      
       });
     } catch (err) {
       console.error('Error updating staff:', err);
