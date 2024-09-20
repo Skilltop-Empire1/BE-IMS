@@ -10,7 +10,7 @@ const {  swaggerUi,swaggerSpec} = require("./swagger")
 
 
 const corsOptions = {
-    origin: 'https://skilltopims.com/',
+    origin: "https://skilltopims.com",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
     allowedHeaders: "Content-Type,Authorization",
