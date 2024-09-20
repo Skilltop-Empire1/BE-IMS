@@ -114,6 +114,7 @@ const upload = multer({
 
 exports.getAllStores = async (req, res) => {
     try {
+        console.log("userId",req.user.dataValues.userId);
         const stores = await Store.findAll();
         res.json(stores);
 

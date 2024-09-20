@@ -1,54 +1,44 @@
-//********import lib rarides */
+//********import libraries */
 const jwt = require("jsonwebtoken");
-require("dotenv").config()
+require("dotenv").config();
 const userModel = require("../models/index");
 
-
 const loginJWTAthentication = async (req, res, next) => {
-  // Middleware for protected routes
-  // const token = req.header('x-auth-token') // Get token from Authorization header
-  
-  const token = req.headers['authorization']?.split(' ')[1];
-  if (!token) return res.status(401).json({ message: "Access denied" });
+  const authHeader = req.header('Authorization');
+  let token
+  if (authHeader && authHeader.startsWith('Bearer')){
+    token = authHeader.split(" ")[1]
+  }
+
+  if (!token) {
+    return res.status(401).json({ message: "Access denied" });
+  }
 
   try {
-     // Verify the token
-     jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
-      if (err) {
-          return res.status(401).json({ message: 'Unauthorized! Token is invalid.' });
+    // Verify the token
+    const verify = jwt.verify(token, process.env.SECRET_KEY);
+    console.log(verify)
+    
+    // Check if userId or email exists in the verified token
+    // if (!verify.email) {
+      // return res.status(401).json({ error: "Invalid token. User ID or email not found" });
+    // }
+    // If using email to find the user
+    const user = await userModel.User.findOne({ email: verify.email });
+    if (!user){
+      const staff =await userModel.Staff.findOne({email})
+      if(!staff){
+        return res.status(401).json({msg: "staff token not found"})
       }
-      req.useremail = decoded.email;
-      next();
-    // jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    //   if (err) return res.status(403).send('Invalid token.');
-    //   req.user = user; // Attach user info to request
-    //   next()
-    })
+      req.user = staff
+    }else{
+      req.user = user
+    }
+    next();  
   } catch (err) {
-    console.log(error)
-    res.status(401).json({ msg: "not authorized" });
+    console.log(err);
+    res.status(400).json({ msg: "Invalid token" });
   }
 };
 
-module.exports = loginJWTAthentication
-
-
-
-// auth.js
-// const jwt = require('jsonwebtoken');
-// const dotenv = require('dotenv');
-
-// dotenv.config();
-
-// const verifyToken = (req, res, next) => {
-//   const token = req.headers['authorization']?.split(' ')[1]; // Get token from Authorization header
-//   if (!token) return res.status(403).send('Token is required.');
-
-//   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-//     if (err) return res.status(403).send('Invalid token.');
-//     req.user = user; // Attach user info to request
-//     next();
-//   });
-// };
-
-// module.exports = verifyToken;
+module.exports = loginJWTAthentication;

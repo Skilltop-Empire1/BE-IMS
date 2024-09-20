@@ -5,9 +5,10 @@ const {passwordReset} = require("../middlewares/passwordResetMiddleware")
 //create express router
 const router = express.Router();
 
-router.route('/get-users' ).get(userController.getAllUsers)
+
+router.route('/get-users', loginJWTAthentication ).get(userController.getAllUsers)
 router.route('/signup' ).post(userController.signup)
-router.route('/login' ).post( userController.login)
+router.route('/login', loginJWTAthentication ).post( userController.login)
 router.route('/password-reset' ).post( userController.passwordReset)
 router.route('/submit-reset').put( userController.resetSubmit)
 router.route('/logout').get( userController.logout)

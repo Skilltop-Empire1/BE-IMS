@@ -12,21 +12,24 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-<<<<<<< HEAD
-<<<<<<< HEAD
+
     "axios": "^1.7.7",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.4.0",
-=======
+
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.3",
     "cloudinary": "^2.5.0",
->>>>>>> 99403c357d5cdb0cb570227ce765a2c3c90559be
-=======
+
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.3",
     "cloudinary": "^2.5.0",
->>>>>>> 99403c357d5cdb0cb570227ce765a2c3c90559be
+
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.3",
+    "cloudinary": "^2.5.0",
+
+
     "cors": "^2.8.5",
     "delayed-stream": "^1.0.0",
     "dotenv": "^16.4.5",

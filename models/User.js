@@ -1,11 +1,13 @@
+const { toDefaultValue } = require("sequelize/lib/utils");
 
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define("User", {
     userId: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     userName: { type: DataTypes.STRING, allowNull: false },
     role: {
-      type: DataTypes.ENUM("superAdmin", "admin", "manager", "salesEmployee"),
-      allowNull: true,
+      type: DataTypes.STRING,
+      allowNull: true, 
+      defaultValue: "superAdmin"
     },
     password: { type: DataTypes.STRING, allowNull: false },
     email: { type: DataTypes.STRING, allowNull: false, unique: true },
