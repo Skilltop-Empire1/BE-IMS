@@ -68,7 +68,7 @@ class UserObject {
         to: email,//"jakpan64@yahoo.com", //req.body.email,
         subject: "IMS Reset link",
         text: `Click on the link to proceed with the password resert: ${passwordLink}`,
-        html: `<a href='https://example.com'>Click here to reset your password: ${randomText}</a>,`, // html body
+        html: `<a href='https://skilltopims.com/passwordConfirmation'>Click here to reset your password: ${randomText}</a>,`, // html body
       };
 
       res.json({
