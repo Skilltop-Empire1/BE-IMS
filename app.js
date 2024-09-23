@@ -8,17 +8,22 @@ const app = express()
 require("./models")
 const {  swaggerUi,swaggerSpec} = require("./swagger")
 
-
+const whiteList = [process.env.CLIENT_URL || process.env.LOCALHOST]
 
 const corsOptions = {
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin:function (origin,callback){
+      if(whiteList.indexOf(origin) !== !origin){
+        callback(null,true)
+      }else{
+        callback(new Error("Not allowed by CORS"))
+      }
+    } ,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
     allowedHeaders: "Content-Type,Authorization",
   };
 
 const port = process.env.PORT || 5000
-console.log('CORS Origin:', process.env.CLIENT_URL);
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
