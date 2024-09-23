@@ -59,6 +59,8 @@ class UserObject {
         }
       });
 
+      const formLink = ""
+
       let mailOptions = {
         from: {
           name: "IMS password reset link",
@@ -67,7 +69,7 @@ class UserObject {
         to: user.email,
         subject: "IMS Reset link",
         text: "Click on the link to proceed with the password reset",
-        html: `<a href='https://skilltopims.com/passwordConfirmation'>Click here to reset your password: ${randomText}</a>,`, // html body
+        html: `<a href= ${process.env.CLIENT_URL}/passwordConfirmation >Click here to reset your password: ${randomText}</a>,`, // html body
       };
 
       res.json({
