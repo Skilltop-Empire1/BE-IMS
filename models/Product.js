@@ -5,11 +5,12 @@ module.exports = (sequelize, DataTypes) => {
     price: { type: DataTypes.INTEGER },
     itemCode: { type: DataTypes.STRING },
     prodPhoto: { type: DataTypes.STRING, allowNull: false },
-    alertStatus: {
-      type: DataTypes.ENUM('active', 'low', 'sold out'),
-      allowNull: false,
-      defaultValue: 'active',
-    },
+    // alertStatus: {
+    //   type: DataTypes.ENUM('active', 'low', 'sold out'),
+    //   allowNull: false,
+    //   defaultValue: 'active',
+    // },
+    alertStatus:{type:DataTypes.INTEGER,allowNull:false,defaultValue: 60},
     quantity: { type: DataTypes.INTEGER, allowNull: false },
     categoryId: {
       type: DataTypes.INTEGER,
@@ -31,15 +32,15 @@ module.exports = (sequelize, DataTypes) => {
   };
 
   // Hook to update alertStatus on quantity changes (before save or update)
-  Product.addHook('beforeSave', (product) => {
-    if (product.quantity === 0) {
-      product.alertStatus = 'sold out';
-    } else if (product.quantity <= 10) {
-      product.alertStatus = 'low';
-    } else {
-      product.alertStatus = 'active';
-    }
-  });
+  // Product.addHook('beforeSave', (product) => {
+  //   if (product.quantity === 0) {
+  //     product.alertStatus = 'sold out';
+  //   } else if (product.quantity <= 10) {
+  //     product.alertStatus = 'low';
+  //   } else {
+  //     product.alertStatus = 'active';
+  //   }
+  // });
 
   return Product;
 };
