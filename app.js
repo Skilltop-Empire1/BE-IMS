@@ -18,7 +18,7 @@ const corsOptions = {
   };
 
 const port = process.env.PORT || 5000
-
+console.log('CORS Origin:', process.env.CLIENT_URL);
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
