@@ -47,7 +47,7 @@ app.use("/api/IMS/staff", staffRoute);
 
 cron.schedule('*/30 * * * *', async ()=> {
   try {
-    const response = await axios.get(process.env.BACKEND_SERVER)
+    const response = await axios.get(process.env.CLIENT_URL)
     console.log("update successful", response.status)
   } catch (error) {
     console.error("failed to update tasks", error.message)
