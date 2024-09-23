@@ -1,4 +1,4 @@
-const {SalesRecord}  = require("../models/");
+const {SalesRecord, Product, Store}  = require("../models/");
 const {
   salesRecordSchema,
 } = require("../salesRecordValidation");
@@ -24,7 +24,19 @@ const {
   // Get all sales records
   const getSalesRecords = async (req, res) => {
     try {
-      const salesRecords = await SalesRecord.findAll();
+    //  const salesRecords = await SalesRecord.findAll();
+      const salesRecords = await SalesRecord.findAll({
+        include: [
+          {
+            model: Product,
+            attributes: ['name'], // Include only the product name
+          },
+          {
+            model: Store,
+            attributes: ['storeName'], // Include only the store name
+          }
+        ]
+      })
       return res.status(200).json(salesRecords);
     } catch (err) {
       console.error("Error fetching sales records:", err);
@@ -46,6 +58,27 @@ const getSalesRecordById = async (req, res) => {
       return res.status(500).json({ message: "Internal Server Error" });
     }
   };
+
+  const getSalesRecordByProductId = async (req, res) => {
+    try {
+      const { productId } = req.params; // Extract productId from request parameters
+      const salesRecords = await SalesRecord.findAll({
+        where: {
+          productId: productId, // Match productId from params
+        },
+      });
+  
+      if (salesRecords.length === 0) {
+        return res.status(404).json({ message: "No sales records found for this product" });
+      }
+  
+      return res.status(200).json(salesRecords); // Return all matching sales records
+    } catch (err) {
+      console.error("Error fetching sales records by productId:", err);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  };
+  
 
   // Update a sales record by ID
  const updateSalesRecord = async (req, res) => {
@@ -97,5 +130,6 @@ module.exports = {
   getSalesRecords, 
   getSalesRecordById, 
   updateSalesRecord, 
-  deleteSalesRecord
+  deleteSalesRecord,
+  getSalesRecordByProductId
 };
