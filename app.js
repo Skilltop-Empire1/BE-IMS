@@ -2,15 +2,16 @@ const express = require("express")
 require("dotenv").config()
 const morgan = require("morgan")
 const cors = require("cors")
+const cron = require("node-cron")
+const axios = require("axios")
 const app = express()
 require("./models")
 const {  swaggerUi,swaggerSpec} = require("./swagger")
-// const swaggerUi = require('swagger-ui-express');
-// const swaggerJsDoc = require('swagger-jsdoc'); 
+
 
 
 const corsOptions = {
-    origin: "https://skilltopims.com",
+    origin: process.env.CLIENT_URL,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
     allowedHeaders: "Content-Type,Authorization",
@@ -44,14 +45,14 @@ app.use("/api/IMS/staff", staffRoute);
 
 
 
-// cron.schedule('*/2 * * * *', async ()=> {
-//   try {
-//     const response = await axios.get(process.env.BACKEND_SERVER)
-//     console.log("update successful", response.status)
-//   } catch (error) {
-//     console.error("failed to update tasks", error.message)
-//   }
-// })
+cron.schedule('*/30 * * * *', async ()=> {
+  try {
+    const response = await axios.get(process.env.BACKEND_SERVER)
+    console.log("update successful", response.status)
+  } catch (error) {
+    console.error("failed to update tasks", error.message)
+  }
+})
 
 
 // Serve the Swagger docs at /api-docs
