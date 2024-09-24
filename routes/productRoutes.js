@@ -82,7 +82,7 @@ router.post('/', upload.single("image"), productController.createProduct);
  *                   storeId:
  *                     type: string
  */
-router.get('/',/*loginJWTAthentication,*/ productController.getAllProducts);
+router.get('/', productController.getAllProducts);
 
 /**
  * @swagger
