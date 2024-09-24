@@ -6,27 +6,11 @@ const cloudinary = require('../config/cloudinary');
 const { storeSchema } = require('../validations/storeValidation');
 const { Store , Product, SalesRecord, Category,User} = require('../models');
 const { validatePhoneNumber } = require('../validations/numberValidator');
-const { Op, Sequelize } = require('sequelize');// Only import Op from Sequelize
+const { Op, Sequelize } = require('sequelize');
 const { v4: uuidv4 } = require('uuid');
-// const cloudinary = require('cloudinary').v2;
 
 const sequelize = Sequelize;
 const storage = multer.memoryStorage();
-// Ensure uploads directory exists
-// const uploadDir = path.join(__dirname, '../uploads');
-// if (!fs.existsSync(uploadDir)) {
-//     fs.mkdirSync(uploadDir, { recursive: true });
-// }
-
-// // Set up multer for file storage
-// const storage = multer.diskStorage({
-//     destination: (req, file, cb) => {
-//         cb(null, uploadDir); // Use the dynamically created directory
-//     },
-//     filename: (req, file, cb) => {
-//         cb(null, Date.now() + path.extname(file.originalname)); // Append the file extension
-//     }
-// });
 
 const upload = multer({
     storage: storage,
@@ -57,8 +41,9 @@ const upload = multer({
         if (error) {
           return res.status(400).json({ error: error.details[0].message });
         }
-
-            const { userId, storeName, location, storeContact, description, noOfStaff, storeManager } = req.body;
+           
+            const { storeName, location, storeContact, description, noOfStaff, storeManager } = req.body;
+            const {userId} = req.user;//Extract UserId from Jwt payload
 
             // Check if store name or location already exists
             if (await Store.findOne({ where: { storeName } })) {
@@ -73,13 +58,6 @@ const upload = multer({
             if (!validatePhoneNumber(storeContact)) {
                 return res.status(400).json({ error: 'Invalid phone number format' });
             }
-
-            // If image was uploaded, save its file path
-            // let storePhoto = null;
-            // if (req.file) {
-            //     storePhoto = req.file.path; // Save the file path in the database
-            // }
-
              // If image was uploaded, save its Cloudinary URL
       let storePhoto = null;
       if (req.file) {
@@ -91,14 +69,13 @@ const upload = multer({
         });
         storePhoto = result.secure_url;
       }
-
             // Create the store in the database
             const store = await Store.create({
                 userId,
                 storeName,
                 location,
                 storeContact,
-                storePhoto, // Store image file path
+                storePhoto, 
                 description,
                 noOfStaff,
                 storeManager
@@ -131,7 +108,7 @@ exports.getStoreInfo = async (req, res) => {
         // 0. Fetch the store details including noOfStaff
         const store = await Store.findOne({
             where: { storeId },
-            attributes: ['noOfStaff']  // Fetch noOfStaff instead of totalEmployees
+            attributes: ['noOfStaff'] 
         });
 
         if (!store) {
@@ -204,14 +181,14 @@ exports.getStoreInfo = async (req, res) => {
             }
         });
 
-        // Construct the response, now including noOfStaff from the store table
+        // Construct response
         const storeInfoDTO = {
             totalItems: totalItems || 0,
             lowStockItem: lowStockItem ? lowStockItem.name : 'N/A',
             mostSoldItem: mostSoldItem ? mostSoldItem.Product.name : 'N/A',
             leastSoldItem: leastSoldItem ? leastSoldItem.Product.name : 'N/A',
             mostPopularCategory: mostPopularCategory ? mostPopularCategory.Category.name : 'N/A',
-            totalEmployees: store.noOfStaff || 0  // Use noOfStaff as totalEmployees
+            totalEmployees: store.noOfStaff || 0  
         };
 
         res.json(storeInfoDTO);
@@ -228,10 +205,8 @@ exports.searchStore = async (req, res) => {
         return res.status(400).json({ error: 'Search query parameter is required.' });
     }
 
-    // Sanitize query to prevent SQL injection (though Sequelize should handle this)
     const sanitizedQuery = query.trim();
 
-    // Check if query is not empty after trimming
     if (sanitizedQuery === '') {
         return res.status(400).json({ error: 'Search query cannot be empty.' });
     }
@@ -246,7 +221,6 @@ exports.searchStore = async (req, res) => {
             }
         });
 
-        // Handle case where no results are found
         if (stores.length === 0) {
             return res.status(404).json({ message: 'No stores found matching the query.' });
         }
@@ -260,11 +234,10 @@ exports.searchStore = async (req, res) => {
     }
 };
 
-
 exports.filterByLocation = async (req, res) => {
     try {
         // Fetch all stores and get unique locations
-        const stores = await Store.findAll({ attributes: ['location'] }); // Only get the 'location' field
+        const stores = await Store.findAll({ attributes: ['location'] }); // Only get the 'location' 
         const locations = [...new Set(stores.map(store => store.location))]; // Remove duplicates
         
         res.status(200).json(locations);
@@ -285,7 +258,6 @@ exports.getStoreOverview = async (req, res) => {
         ],
       });
   
-      
       const storeOverview = stores.map(store => {
         const totalItems = store.Products.reduce((acc, product) => acc + product.quantity, 0); // Total items
         const totalStockValue = store.Products.reduce((acc, product) => acc + (product.price * product.quantity), 0); // Total stock value
@@ -293,9 +265,9 @@ exports.getStoreOverview = async (req, res) => {
         return {
           storeId: store.storeId,
           storeName: store.storeName,
-          totalItems: totalItems || 'Not assigned',  // In case there's no data
-          totalStockValue: totalStockValue || 'Not assigned', // In case there's no data
-          noOfStaff: store.noOfStaff || 'Not assigned',  // Use staff count from the Store model
+          totalItems: totalItems || 'N/A',  // In case there's no data
+          totalStockValue: totalStockValue || 'N/A', // In case there's no data
+          noOfStaff: store.noOfStaff || 'N/A',  // Use staff count from the Store model
         };
       });
 
@@ -383,35 +355,4 @@ exports.editStoreById = async (req, res) => {
             res.status(500).json({ error: error.message });
         }
     });
-};
-
-
-
-// CREATE A TEMPORARY USER TO CREATE STORE. 
-exports.createTemporaryUserForTest = async (req, res) => {
-    try {
-        const { userName, email, password, role } = req.body;
-
-        // Ensure required fields are provided
-        if (!userName || !email || !password || !role) {
-            return res.status(400).json({ error: 'Missing required fields' });
-        }
-
-        // Create a new temporary user
-        const newUser = await User.create({
-            userName,
-            email,
-            password, 
-            role
-        });
-
-        res.status(201).json({
-            message: 'Temporary user created successfully!',
-            data: newUser
-        });
-
-    } catch (error) {
-        console.error('Error creating temporary user:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
 };
