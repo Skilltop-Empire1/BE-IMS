@@ -4,10 +4,37 @@ const morgan = require("morgan")
 const cors = require("cors")
 const cron = require("node-cron")
 const axios = require("axios")
+const http = require("http")
+const {Server} = require("socket.io")
 const app = express()
+const server = http.createServer(app)
+const io = new Server(server,{
+  cors:{
+    origin:process.env.CLIENT_URL || process.env.LOCALHOST,
+    methods:["POST","GET"],
+    credentials:true
+  }
+})
 require("./models")
 const {  swaggerUi,swaggerSpec} = require("./swagger")
+const userSocketMap = {}
 
+io.on("connection",(socket) =>{
+  socket.on("register",(userId) => {
+    userSocketMap[userId] = socket.id;
+    console.log(`User ${userId} connected with socket id: ${socket.id}`);
+  })
+ 
+  socket.on("disconnect",() =>{
+    for(const [userId,socketId] of Object.entries(userSocketMap)){
+      if(socketId === socket.id){
+        delete userSocketMap[userId]
+        console.log(`User ${userId} disconnected`);
+      }
+    }
+   
+  })
+})
 const whiteList = [process.env.CLIENT_URL || process.env.LOCALHOST]
 
 const corsOptions = {
@@ -37,6 +64,8 @@ const categoryRoute = require("./routes/categoryRoutes");
 const storeRoute = require("./routes/storeRoutes");
 const salesRecordRoute = require("./routes/salesRoutes");
 const staffRoute = require("./routes/staffRoutes");
+const notificationRoute = require("./routes/notificationRoutes")
+
 const errorHandler = require("./error/errorHandler")
 const notFoundError = require("./error/notFoundError")
 
@@ -47,6 +76,7 @@ app.use("/api/IMS/category", categoryRoute);
 app.use("/api/IMS/store", storeRoute);
 app.use("/api/IMS/sales", salesRecordRoute);
 app.use("/api/IMS/staff", staffRoute);
+app.use("/api/IMS/notification", notificationRoute);
 
 
 
@@ -67,10 +97,10 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(notFoundError)
 //global error hander
 app.use(errorHandler)
-
+app.set("io",io)
 const startServer = async () => {
     try {
-      app.listen(port, () => {
+      server.listen(port, () => {
         console.log(`App is listening on port ${port}`);
       });
     } catch (error) {
