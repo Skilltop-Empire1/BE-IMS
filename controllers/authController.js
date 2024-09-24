@@ -194,7 +194,7 @@ class UserObject {
     const account = user || staff
 
 
-    const isMatch = await bcrypt.compare(password, user.password || staff.password);
+    const isMatch = await bcrypt.compare(password, account.password);
     try {
       if (!isMatch) {
         return res.status(404).json({ msg: "Incorrect login details" });
@@ -202,7 +202,7 @@ class UserObject {
 
          // ******************Create JWT token ***********************
 
-        const token = jwt.sign({id: user.userId|| staff.staffId, email: account.email, role: account.role}, process.env.SECRET_KEY, { expiresIn: '1h' })
+        const token = jwt.sign({id: account.id, email: account.email, role: account.role}, process.env.SECRET_KEY, { expiresIn: '1h' })
         res.json({token, id: account.id, email: account.email, role:account.role });
         
           
