@@ -2,7 +2,7 @@ const { User, Profile } = require("../models");
 const cloudinary = require("../config/cloudinary");
 const multer = require("multer");
 
-// Modify multer for in-memory storage to upload directly to Cloudinary
+
 const storage = multer.memoryStorage(); // Use memory storage instead of disk
 const upload = multer({
   storage: storage,
@@ -13,7 +13,7 @@ const upload = multer({
     }
     cb(null, true);
   },
-  limits: { fileSize: 5 * 1024 * 1024 } // Optional: Limit file size to 5MB
+  limits: { fileSize: 5 * 1024 * 1024 } // Limited the file size to 5MB
 });
 
 // Upload Profile Picture
@@ -26,14 +26,14 @@ exports.uploadProfilePic = async (req, res) => {
     }
 
     try {
-      // Fetch user by userId (assuming it's passed in the request body or available through auth middleware)
-      const { userId } = req.body;
+      // Fetch user by userId
+      const { userId } = req.user;
 
-      // Check if the user exists
-      const user = await User.findByPk(userId);
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
+       // Check if the user exists
+       const user = await User.findByPk(userId);
+       if (!user) {
+         return res.status(404).json({ error: 'User not found' });
+       }
 
       // Upload the image to Cloudinary
       const result = await new Promise((resolve, reject) => {
@@ -62,7 +62,7 @@ exports.uploadProfilePic = async (req, res) => {
 // Get Profile Picture by User ID
 exports.getProfilePic = async (req, res) => {
   try {
-    const { userId } = req.params; // Assuming userId is passed as a route parameter
+    const { userId } = req.user;
 
     // Fetch the user's profile picture
     const profile = await Profile.findOne({ where: { userId } });
