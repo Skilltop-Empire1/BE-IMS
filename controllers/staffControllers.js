@@ -1,15 +1,15 @@
 const {Staff}  = require('../models');
 const nodemailer = require('nodemailer')
-    
+const veryfytoken = require('../middlewares/authMiddleware')
 
 
     let mailTransporter = nodemailer.createTransport({
       host: "mail.skilltopims.com",  
       port: 587, 
-      secure: false,  
+      secure: false, 
       auth: {
-        user: 'kizohills@skilltopims.com',
-        pass: 'Kizohills$$1234'  
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
       tls: {
         rejectUnauthorized: false
@@ -137,6 +137,7 @@ const deleteStaff = async (req, res) => {
 // Create staff (Invite staff)
 const inviteStaff = async (req, res) => {
     try {
+      const user = req.user 
       const { email, password,username} = req.body;
       if (!email || !password) {
         return res.status(400).json({ message: 'Email and password are required' });
@@ -155,14 +156,20 @@ const inviteStaff = async (req, res) => {
         role: 'Employee',
         storeName: 'Store 1', 
       });
+      
 
       let mailOption = {
-        from: "kizohills@skilltopims.com",
+        from: process.env.EMAIL_USER,
         to: newStaff.email,
         subject: "You have been invited as a Staff Member",
-        html: `<h2> hi ${newStaff.username}! Hello, you have been invited to
-         join as a staff member. Please use this credentials 
-         to log in email ${newStaff.email} and password${password}</h2>`
+        html: `<h2> hi ${newStaff.username}!,
+        
+            you have been invited by ${user.username} to
+             join as a staff member.Please use the below credentials to 
+         login by clicking on this ${www.skilltopims.com}
+
+         Email:${newStaff.email}
+         Password${newStaff.password}</h2>`
       }
       // sending email
       mailTransporter.sendMail(mailOption, function(error, info) {

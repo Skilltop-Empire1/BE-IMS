@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const veryfytoken = require('../middlewares/authMiddleware')
 const { getStaffList, 
     getStaffById, 
     deleteStaff, 
@@ -14,6 +15,6 @@ router.put('/:id', updateStaff);
 
 router.delete('/:id', deleteStaff);
 
-router.post('/invite', inviteStaff);
+router.post('/invite',veryfytoken, inviteStaff);
 
 module.exports = router;
