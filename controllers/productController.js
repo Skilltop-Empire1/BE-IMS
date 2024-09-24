@@ -52,6 +52,7 @@ exports.createProduct = async (req, res) => {
 // Get all products
 exports.getAllProducts = async (req, res) => {
   try {
+    console.log("userId",req.user)
     const products = await Product.findAll({});
     res.status(200).json(products);
   } catch (error) {
@@ -116,7 +117,7 @@ exports.updateProduct = async (req, res) => {
 // Delete a product
 exports.deleteProduct = async (req, res) => {
   try {
-    const product = await Product.findByPk(req.params.id);
+    const product = await Product.findByPk(req.params.prodId);
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }
@@ -154,12 +155,10 @@ exports.updateProductStock = async (req, res) => {
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }
-    // request body validation
     const { error } = updateStockSchema.validate(req.body);
     if (error) {
       return res.status(400).json({ message: error.details[0].message });
     }
-    //updating product stock
     product.quantity = req.body.quantity;
     await product.save();
     res.status(200).json(product);
@@ -171,7 +170,7 @@ exports.updateProductStock = async (req, res) => {
 // Filter products by availability
 exports.getProductsByAvailability = async (req, res) => {
   try {
-    const { availability } = req.query; // 'storeA', 'storeB', 'storeC'
+    const { availability } = req.query; 
     const products = await Product.findAll({
       where: {
         storeAvailable: availability
@@ -187,7 +186,6 @@ exports.getProductsByAvailability = async (req, res) => {
 
 exports.filterAllProducts = async (req, res) => {
   try {
-    // Extract query parameters
     const {
       name,
       categoryId,
@@ -199,62 +197,45 @@ exports.filterAllProducts = async (req, res) => {
       limit,
       page
     } = req.query;
-
-    // Create a filter object based on the query params
     const where = {};
-
-    // Filter by product name (case-insensitive search)
     if (name) {
       where.name = { [Op.iLike]: `%${name}%` };
     }
-
-    // Ensure categoryId is an integer and filter by categoryId
     if (categoryId && !isNaN(parseInt(categoryId))) {
       where.categoryId = parseInt(categoryId);
     } else if (categoryId) {
       return res.status(400).json({ error: 'Invalid categoryId format' });
     }
-
-    // Ensure storeId is an integer and filter by storeId
     if (storeId && !isNaN(parseInt(storeId))) {
       where.storeId = parseInt(storeId);
     } else if (storeId) {
       return res.status(400).json({ error: 'Invalid storeId format' });
     }
-
-    // Filter by alertStatus (active, low, sold out)
     if (alertStatus) {
       where.alertStatus = alertStatus;
     }
-
-    // Filter by price range
     if (priceMin || priceMax) {
       where.price = {};
       if (priceMin && !isNaN(parseInt(priceMin))) {
-        where.price[Op.gte] = parseInt(priceMin); // Price greater than or equal to priceMin
+        where.price[Op.gte] = parseInt(priceMin); 
       } else if (priceMin) {
         return res.status(400).json({ error: 'Invalid priceMin format' });
       }
-
       if (priceMax && !isNaN(parseInt(priceMax))) {
-        where.price[Op.lte] = parseInt(priceMax); // Price less than or equal to priceMax
+        where.price[Op.lte] = parseInt(priceMax); 
       } else if (priceMax) {
         return res.status(400).json({ error: 'Invalid priceMax format' });
       }
     }
-
-    // Sorting products based on query param (sort)
     let order = [];
     if (sort) {
       const [key, direction] = sort.split(':'); // Example: sort=name:asc or sort=price:desc
       order.push([key, direction.toUpperCase()]);
     }
-
     // Pagination logic
     const itemsPerPage = limit ? parseInt(limit) : 10; // Default limit: 10
     const currentPage = page ? parseInt(page) : 1;
     const offset = (currentPage - 1) * itemsPerPage;
-
     // Find products with filters, sorting, and pagination
     const products = await Product.findAll({
       where,
@@ -262,8 +243,6 @@ exports.filterAllProducts = async (req, res) => {
       limit: itemsPerPage,
       offset,
     });
-
-    // Return the filtered products
     res.status(200).json(products);
   } catch (error) {
     res.status(400).json({ error: error.message });
