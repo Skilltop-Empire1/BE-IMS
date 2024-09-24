@@ -24,16 +24,19 @@ const loginJWTAthentication = async (req, res, next) => {
       // return res.status(401).json({ error: "Invalid token. User ID or email not found" });
     // }
     // If using email to find the user
-    const user = await userModel.User.findOne({ email: verify.email });
-    if (!user){
-      const staff =await userModel.Staff.findOne({email})
-      if(!staff){
-        return res.status(401).json({msg: "staff token not found"})
-      }
-      req.user = staff
-    }else{
-      req.user = user
-    }
+    // const user = await userModel.User.findOne({ email: verify.email });
+    // if (!user){
+    //   const staff =await userModel.Staff.findOne({email})
+    //   if(!staff){
+    //     return res.status(401).json({msg: "staff token not found"})
+    //   }
+    //   req.user = staff
+    // }else{
+    //   req.user = user
+    // }
+    const {id,email,role} = verify
+    console.log("verify",verify,id,email,role)
+    req.user = {userId:id,email,role}
     next();  
   } catch (err) {
     console.log(err);
