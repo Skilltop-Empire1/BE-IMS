@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
 const upload = require("../middlewares/multer")
+const loginJWTAthentication = require("../middlewares/authMiddleware")
 
 
 

@@ -1,10 +1,6 @@
 const Joi = require('joi');
 
 const storeSchema = Joi.object({
-    userId: Joi.number().required().messages({
-        'any.required': 'User ID is required to create a store.',
-        'number.base': 'User ID must be a number.'
-    }),
     storeName: Joi.string().required().messages({
         'any.required': 'Store Name is required.',
         'string.base': 'Store Name must be a string.'
