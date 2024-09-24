@@ -24,6 +24,7 @@ const loginJWTAthentication = async (req, res, next) => {
       // return res.status(401).json({ error: "Invalid token. User ID or email not found" });
     // }
     // If using email to find the user
+    
     // const user = await userModel.User.findOne({ email: verify.email });
     // if (!user){
     //   const staff =await userModel.Staff.findOne({email})
@@ -34,6 +35,7 @@ const loginJWTAthentication = async (req, res, next) => {
     // }else{
     //   req.user = user
     // }
+
     const {id,email,role} = verify
     console.log("verify",verify,id,email,role)
     req.user = {userId:id,email,role}

@@ -44,10 +44,9 @@ class UserObject {
         return res.status(404).json({ msg: "User does not exist" });
       }
 
-      const passwordLink = "www.gmail.com";
-      const randomText = await randompassword.generateRandomPassword(50);
-      const transporter = nodemailer.createTransport({
-        // service: "gmail",
+      // const passwordLink = "www.gmail.com";
+      let randomText = await randompassword.generateRandomPassword(50);
+      let transporter = await  nodemailer.createTransport({
         host: "mail.skilltopims.com",
         port: 587,
         secure: false,
@@ -60,15 +59,17 @@ class UserObject {
         }
       });
 
-      const mailOptions = {
+      const formLink = ""
+
+      let mailOptions = {
         from: {
-          name: "IMS",
+          name: "IMS password reset link",
           address: process.env.EMAIL_USER,
         },
-        to: email,//"jakpan64@yahoo.com", //req.body.email,
+        to: user.email,
         subject: "IMS Reset link",
-        text: `Click on the link to proceed with the password resert: ${passwordLink}`,
-        html: `<a href='https://skilltopims.com/passwordConfirmation'>Click here to reset your password: ${randomText}</a>,`, // html body
+        text: "Click on the link to proceed with the password reset",
+        html: `<a href= ${process.env.CLIENT_URL}/passwordConfirmation >Click here to reset your password: ${randomText}</a>,`, // html body
       };
 
       res.json({
