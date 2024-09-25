@@ -5,41 +5,20 @@ const cors = require("cors")
 const cron = require("node-cron")
 const axios = require("axios")
 const http = require("http")
-const {Server} = require("socket.io")
+
+const { initializeSocket } = require("./config/socket")
 const app = express()
 const server = http.createServer(app)
-const io = new Server(server,{
-  cors:{
-    origin:process.env.CLIENT_URL || process.env.LOCALHOST,
-    methods:["POST","GET"],
-    credentials:true
-  }
-})
+
+const io = initializeSocket(server)
 require("./models")
 const {  swaggerUi,swaggerSpec} = require("./swagger")
-const userSocketMap = {}
 
-io.on("connection",(socket) =>{
-  socket.on("register",(userId) => {
-    userSocketMap[userId] = socket.id;
-    console.log(`User ${userId} connected with socket id: ${socket.id}`);
-  })
- 
-  socket.on("disconnect",() =>{
-    for(const [userId,socketId] of Object.entries(userSocketMap)){
-      if(socketId === socket.id){
-        delete userSocketMap[userId]
-        console.log(`User ${userId} disconnected`);
-      }
-    }
-   
-  })
-})
 const whiteList = [process.env.CLIENT_URL || process.env.LOCALHOST]
 
 const corsOptions = {
     origin:function (origin,callback){
-      if(whiteList.indexOf(origin) !== !origin){
+      if(whiteList.indexOf(origin) !==-1 || !origin){
         callback(null,true)
       }else{
         callback(new Error("Not allowed by CORS"))

@@ -1,20 +1,51 @@
-const {Staff, Notification} = require("../models")
+const {Staff, Notification, SalesRecord,Product} = require("../models")
+const { getUserSocketMap } = require("../config/socket");
+const userSocketMap = getUserSocketMap();
 
+const io = app.get("io"); // Retrieve io instance
+const socketId = userSocketMap[userId];
 
-const getNotifications = async (req, res) => {
+const createNotifications = async (productId,quantity,userId) => {
   try {
-    const userId = req.user.id;  // Assuming user ID is available in req.user
-    const notifications = await Notification.findAll({ where: { userId } });
+  
+    //const userId = req.user.id;  
+    const product = await Product.findByPk(productId)
+    if(!product){
+      return res.status(404).json({message:"product not found"})
+    }
+    if(product.quantity < quantity){
+      return res.status(401).json({msg:"Insufficient stock"})
+    }
+    product.quantity -= quantity
+    await product.save()
+    
+    if(product.quantity <= product.alertStatus){
+      //emit to particular user
+      if(socketId){
+        io.to(socketId/*`user_${userId}`*/).emit('productAlert',{
+          message:`The quantity of ${product.name} is low (Current: ${product.quantity})`,
+          productId:product.prodId
+        })
+      }else{
+        console.error(`User ${userId} is not connected.`);
+      }
+    }
+    //create notification
+    const notification = await Notification.create({
+      message: `The quantity of ${product.name} is low (Current: ${product.quantity})`,
+      type: 'product',
+      userId: userId,
+    })
     
     res.status(200).json({
       success: true,
-      data: notifications
+      data: notification
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       success: false,
-      message: "Failed to fetch notifications",
+      message: "Failed to create notifications",
     });
   }
 };
@@ -26,7 +57,7 @@ const staffAcceptInvite = async (staffId) => {
       staff.status = 'active';
       await staff.save();
   
-    io.emit('staffInviteAccepted', {
+    io.to(`user_${userId}`).emit('staffInviteAccepted', {
       message: `${staff.username} has accepted the invite`,
       staffId: staff.staffId,
     });
@@ -34,7 +65,7 @@ const staffAcceptInvite = async (staffId) => {
       await sequelize.models.Notification.create({
         message: `${staff.username} has accepted the invite`,
         type: 'staff',
-        userId: 1,  // Customize this based on who should receive the notification
+        userId: userId,  // Customize this based on who should receive the notification
       });
     }
   };
@@ -73,4 +104,4 @@ const staffAcceptInvite = async (staffId) => {
   };
   
 
-  module.exports = {staffAcceptInvite,notificationRead,acceptInvite,getNotifications}
+  module.exports = {staffAcceptInvite,notificationRead,acceptInvite,createNotifications}
