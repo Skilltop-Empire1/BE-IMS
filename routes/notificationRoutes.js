@@ -5,5 +5,7 @@ const loginJWTAthentication = require("../middlewares/authMiddleware")
 
 
 router.post ("/read",notificationController.notificationRead)
-router.get("/",loginJWTAthentication,notificationController.getNotifications)
+router.get("/",loginJWTAthentication,notificationController.createNotifications)
+
+
 module.exports = router
