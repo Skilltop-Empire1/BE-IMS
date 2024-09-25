@@ -3,8 +3,9 @@ const express = require("express");
 const router = express.Router();
 const storeController = require('../controllers/storeController');
 const loginJWTAthentication = require('../middlewares/authMiddleware')
+const authorise = require('../middlewares/rolePermission')
 // const { authenticateToken } = require('../middlewares/authMiddleware');
-router.post('/create',loginJWTAthentication, storeController.createStore);
+router.post('/create',loginJWTAthentication,authorise("create"), storeController.createStore);
 router.get('/all',  storeController.getAllStores);
 router.get('/:storeId/info',  storeController.getStoreInfo);
 router.get('/search',  storeController.searchStore);
