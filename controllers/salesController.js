@@ -3,6 +3,8 @@ const {
   salesRecordSchema,
 } = require("../salesRecordValidation");
 
+const { createNotifications } = require("./notificationController");
+
 
   // Create a new sales record
   const createSalesRecord = async (req, res) => {
@@ -14,6 +16,7 @@ const {
     //   return res.status(400).json({ message: 'Invalid categoryId' });
     // }
       const newSalesRecord = await SalesRecord.create(req.body);
+      await createNotifications(req.body.productId,req.body.quantity,req.body.userId)
       return res.status(201).json(newSalesRecord);
     } catch (err) {
       console.error("Error creating sales record:", err);

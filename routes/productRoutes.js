@@ -51,7 +51,7 @@ const loginJWTAthentication = require("../middlewares/authMiddleware")
  *       400:
  *         description: Invalid input
  */
-router.post('/', upload.single("image"), productController.createProduct);
+router.post('/', upload.single("image"), loginJWTAthentication,productController.createProduct);
 
 /**
  * @swagger
