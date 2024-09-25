@@ -2,9 +2,6 @@ const {Staff, Notification, SalesRecord,Product} = require("../models")
 const { getUserSocketMap } = require("../config/socket");
 const userSocketMap = getUserSocketMap();
 
- // Retrieve io instance
-
-
 const createNotifications = async (productId,quantity,userId) => {
   try {
     const io = app.get("io");

@@ -1,4 +1,4 @@
-const rolesPermissions = require('./roles');
+const rolesPermissions = require('../utils/rolePermission');
 
 // Authorization middleware
 const authorize = (action) => {
