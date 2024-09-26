@@ -4,7 +4,7 @@ const userSocketMap = {};
 const initializeSocket = (server) => {
   const io = new Server(server, {
     cors: {
-      origin: process.env.CLIENT_URL || process.env.LOCALHOST,
+      origin: 'http://localhost:5173',
       methods: ["POST", "GET"],
       credentials: true,
     },
