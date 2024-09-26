@@ -202,7 +202,7 @@ class UserObject {
 
          // ******************Create JWT token ***********************
 
-        const token = jwt.sign({id: account.id, email: account.email, role: account.role}, process.env.SECRET_KEY, { expiresIn: '1h' })
+        const token = jwt.sign({id: account.userId, email: account.email, role: account.role}, process.env.SECRET_KEY, { expiresIn: '1h' })
         res.json({token, id: account.id, email: account.email, role:account.role });
         
           

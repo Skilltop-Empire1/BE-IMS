@@ -43,20 +43,20 @@ module.exports = (sequelize, DataTypes) => {
   // });
 
   // add notification hook
-  Product.addHook('afterUpdate',async (product,options) =>{
-    if(product.quantity <= product.alertStatus){
-        // Emit an event to notify connected users
-    io.emit('productAlert', {
-      message: `The quantity of ${product.name} is low (Current: ${product.quantity})`,
-      productId: product.prodId,
-    });
-      await sequelize.models.Notification.create({
-        message:`The quantity of ${product.name} is low (Current: ${product.quantity})`,
-        type:'product',
-        userId:req.user.userId
-      })
-    }
-  })
+  // Product.addHook('afterUpdate',async (product,options) =>{
+  //   if(product.quantity <= product.alertStatus){
+  //       // Emit an event to notify connected users
+  //   io.emit('productAlert', {
+  //     message: `The quantity of ${product.name} is low (Current: ${product.quantity})`,
+  //     productId: product.prodId,
+  //   });
+  //     await sequelize.models.Notification.create({
+  //       message:`The quantity of ${product.name} is low (Current: ${product.quantity})`,
+  //       type:'product',
+  //       userId:req.user.userId
+  //     })
+  //   }
+  // })
   return Product;
 };
 
