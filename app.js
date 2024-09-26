@@ -14,7 +14,7 @@ const io = initializeSocket(server)
 require("./models")
 const {  swaggerUi,swaggerSpec} = require("./swagger")
 
-const whiteList = [process.env.CLIENT_URL || process.env.LOCALHOST]
+const whiteList = [process.env.CLIENT_URL || process.env.LOCALHOST,'http://localhost:5173']
 
 const corsOptions = {
     origin:function (origin,callback){
