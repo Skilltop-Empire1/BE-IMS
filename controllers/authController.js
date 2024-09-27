@@ -201,9 +201,22 @@ class UserObject {
       } else {
 
          // ******************Create JWT token ***********************
+        let id;
+        if(user){
+          id=user.userId
+        }else{
+          id=staff.staffId
+        }
+        const token = jwt.sign({id, email: account.email, role: account.role}, process.env.SECRET_KEY, { expiresIn: '1h' })
+        res.json({token, id: id, email: account.email, role:account.role });
+        
+          
+      
 
-        const token = jwt.sign({id: account.userId, email: account.email, role: account.role}, process.env.SECRET_KEY, { expiresIn: '1h' })
-        res.json({token, id: account.id, email: account.email, role:account.role });
+        // res.cookie("token", token, {
+        //   httpOnly: true,
+        // })
+         // return res.status(200).json({ msg: "Authentication success" });
       }
     } catch (error) {
       console.error(error);
