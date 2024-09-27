@@ -44,7 +44,7 @@ const upload = multer({
            
             const { storeName, location, storeContact, description, noOfStaff, storeManager } = req.body;
             const {userId} = req.user;//Extract UserId from Jwt payload
-
+            console.log("userId",userId)
             // Check if store name or location already exists
             if (await Store.findOne({ where: { storeName } })) {
                 return res.status(400).json({ error: 'Store Name already exists' });
