@@ -1,7 +1,7 @@
 const {Staff}  = require('../models');
 const nodemailer = require('nodemailer')
 const veryfytoken = require('../middlewares/authMiddleware')
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 
     let mailTransporter = nodemailer.createTransport({
