@@ -1,4 +1,4 @@
-const {Staff}  = require('../models');
+const {Staff, User}  = require('../models');
 const nodemailer = require('nodemailer')
 const veryfytoken = require('../middlewares/authMiddleware')
 const bcrypt = require('bcryptjs');
@@ -200,8 +200,8 @@ const inviteStaff = async (req, res) => {
     console.log(user);
 
     const { email, password, username } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Email and password are required' });
+    if (!email || !password, !username) {
+      return res.status(400).json({ message: 'Invalid credentials' });
     }
 
     // Check if the email already exists
@@ -209,6 +209,13 @@ const inviteStaff = async (req, res) => {
     if (existingStaff) {
       return res.status(400).json({ message: 'Email already exists' });
     }
+
+    // Check if the email already exists
+    const existingUser = await User.findOne({ where: { email: email } });
+    if (existingStaff) {
+      return res.status(400).json({ message: 'Email already exists' });
+    }
+
 
     // Hash the password before saving it
     const saltRounds = 10;
