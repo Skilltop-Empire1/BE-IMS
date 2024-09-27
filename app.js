@@ -17,6 +17,7 @@ const {  swaggerUi,swaggerSpec} = require("./swagger")
 const whiteList = [process.env.CLIENT_URL, process.env.CLIENT2_URL,'http://localhost:5173']
 
 const corsOptions = {
+    origin: process.env.CLIENT_URL || 'https://skilltopims.com/',
     origin:function (origin,callback){
       if(whiteList.indexOf(origin) !==-1 || !origin){
         callback(null,true)
