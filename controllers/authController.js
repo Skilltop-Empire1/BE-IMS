@@ -201,9 +201,14 @@ class UserObject {
       } else {
 
          // ******************Create JWT token ***********************
-
-        const token = jwt.sign({id: account.userId, email: account.email, role: account.role}, process.env.SECRET_KEY, { expiresIn: '1h' })
-        res.json({token, id: account.id, email: account.email, role:account.role });
+        let id;
+        if(user){
+          id=user.userId
+        }else{
+          id=staff.staffId
+        }
+        const token = jwt.sign({id, email: account.email, role: account.role}, process.env.SECRET_KEY, { expiresIn: '1h' })
+        res.json({token, id: id, email: account.email, role:account.role });
         
           
       
