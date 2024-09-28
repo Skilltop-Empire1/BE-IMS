@@ -1,4 +1,4 @@
-const {Staff}  = require('../models');
+const {Staff, User}  = require('../models');
 const nodemailer = require('nodemailer')
 const veryfytoken = require('../middlewares/authMiddleware')
 const bcrypt = require('bcrypt');
@@ -204,10 +204,15 @@ const inviteStaff = async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    // Check if the email already exists
+    // Check if the email already exists in staff
     const existingStaff = await Staff.findOne({ where: { email: email } });
     if (existingStaff) {
-      return res.status(400).json({ message: 'Email already exists' });
+      return res.status(400).json({ message: 'Email already exists as a staff' });
+    }
+
+    const userExistingStaff = await User.findOne({ where: { email: email } });
+    if (userExistingStaff) {
+      return res.status(400).json({ message: 'Email already exists as a user' });
     }
 
     // Hash the password before saving it
@@ -233,7 +238,7 @@ const inviteStaff = async (req, res) => {
       <p>You have been invited by ${user.email} to join as a staff member.</p>
       <p>Please use the credentials below to log in by clicking on this <a href="${url}">link</a>:</p>
       <p>Email: ${newStaff.email}<br>
-      Password: ${password}</p>` // Send the plain password in the email
+      Password: ${password}</p>` 
     };
 
     // Sending the email

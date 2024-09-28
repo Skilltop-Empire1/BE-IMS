@@ -33,11 +33,11 @@ const { createNotifications } = require("./notificationController");
         include: [
           {
             model: Product,
-            attributes: ['name','price','prodPhoto:url'], // Include only the product name
+            attributes: ['name','price','prodPhoto'],
           },
           {
             model: Store,
-            attributes: ['storeName'], // Include only the store name
+            attributes: ['storeName'], 
           }
         ]
       })
