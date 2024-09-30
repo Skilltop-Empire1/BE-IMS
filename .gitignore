@@ -1,2 +1,5 @@
 /node_modules
 .env
+test.html
+webSocketServer.js
+testSocket.js

@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
 const upload = require("../middlewares/multer")
-const loginJWTAthentication = require("../middlewares/authMiddleware")
+const loginJWTAthentication = require("../middlewares/authMiddleware");
+const authorize = require('../middlewares/rolePermission');
 
 
 
@@ -51,7 +52,7 @@ const loginJWTAthentication = require("../middlewares/authMiddleware")
  *       400:
  *         description: Invalid input
  */
-router.post('/', upload.single("image"), loginJWTAthentication,productController.createProduct);
+router.post('/', upload.single("image"), loginJWTAthentication,authorize("create"),productController.createProduct);
 
 /**
  * @swagger
@@ -225,7 +226,7 @@ router.get('/:prodId', productController.getProductById);
  *       404:
  *         description: Product not found
  */
-router.put('/:prodId',upload.single("image"), productController.updateProduct);
+router.put('/:prodId',upload.single("image"),loginJWTAthentication,authorize("edit"), productController.updateProduct);
 
 /**
  * @swagger
@@ -246,7 +247,7 @@ router.put('/:prodId',upload.single("image"), productController.updateProduct);
  *       404:
  *         description: Product not found
  */
-router.delete('/:prodId', productController.deleteProduct);
+router.delete('/:prodId',loginJWTAthentication,authorize("approval"), productController.deleteProduct);
 
 /**
  * @swagger
@@ -351,7 +352,7 @@ router.get('/store/:storeId', productController.getProductsByStore);
  *       404:
  *         description: Product not found
  */
-router.patch('/:prodId/stock', productController.updateProductStock);
+router.patch('/:prodId/stock',loginJWTAthentication,authorize("edit"), productController.updateProductStock);
 
 
 

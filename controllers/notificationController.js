@@ -2,12 +2,9 @@ const {Staff, Notification, SalesRecord,Product} = require("../models")
 const { getUserSocketMap } = require("../config/socket");
 const userSocketMap = getUserSocketMap();
 
- // Retrieve io instance
-
-
-const createNotifications = async (productId,quantity,userId) => {
+const createNotifications = async (io,productId,quantity,userId,res) => {
   try {
-    const io = app.get("io");
+    //const io = app.get("io");
     const socketId = userSocketMap[userId];
     //const userId = req.user.id;  
     const product = await Product.findByPk(productId)
@@ -22,11 +19,14 @@ const createNotifications = async (productId,quantity,userId) => {
     
     if(product.quantity <= product.alertStatus){
       //emit to particular user
+      console.log("socketId",socketId)
       if(socketId){
+        console.log("socketId",socketId)
         io.to(socketId/*`user_${userId}`*/).emit('productAlert',{
           message:`The quantity of ${product.name} is low (Current: ${product.quantity})`,
           productId:product.prodId
         })
+        console.log("message",message)
       }else{
         console.error(`User ${userId} is not connected.`);
       }
@@ -38,10 +38,10 @@ const createNotifications = async (productId,quantity,userId) => {
       userId: userId,
     })
     
-    res.status(200).json({
-      success: true,
-      data: notification
-    });
+    // res.status(200).json({
+    //   success: true,
+    //   data: notification
+    // });
   } catch (error) {
     console.error(error);
     res.status(500).json({
