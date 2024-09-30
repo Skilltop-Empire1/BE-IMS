@@ -22,7 +22,8 @@ const { createNotifications } = require("./notificationController");
       } else {
         console.log("Socket.io instance retrieved:", io);
       }
-      await createNotifications(io,req.body.productId,req.body.quantity,req.body.userId,res)
+      const userId = req.user.userId
+      await createNotifications(io,req.body.productId,req.body.quantity,userId,res)
       return res.status(201).json(newSalesRecord);
     } catch (err) {
       console.error("Error creating sales record:", err);
