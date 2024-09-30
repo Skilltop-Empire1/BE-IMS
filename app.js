@@ -11,6 +11,12 @@ const app = express()
 const server = http.createServer(app)
 
 const io = initializeSocket(server)
+if (io) {
+  console.log("Socket.io initialized successfully");
+} else {
+  console.error("Socket.io initialization failed");
+}
+
 require("./models")
 const {  swaggerUi,swaggerSpec} = require("./swagger")
 

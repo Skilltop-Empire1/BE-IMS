@@ -1,49 +1,106 @@
-const {Staff, Notification, SalesRecord,Product} = require("../models")
+// const {Staff, Notification, SalesRecord,Product} = require("../models")
+// const { getUserSocketMap } = require("../config/socket");
+// const userSocketMap = getUserSocketMap();
+
+// const createNotifications = async (io,productId,quantity,userId,res) => {
+//   try {
+//     //const io = app.get("io");
+//     const socketId = userSocketMap[userId];
+//     //const userId = req.user.id;  
+//     const product = await Product.findByPk(productId)
+//     if(!product){
+//       return res.status(404).json({message:"product not found"})
+//     }
+//     if(product.quantity < quantity){
+//       return res.status(401).json({msg:"Insufficient stock"})
+//     }
+//     product.quantity -= quantity
+//     await product.save()
+    
+//     if(product.quantity <= product.alertStatus){
+//       //emit to particular user
+//       console.log("socketId",socketId)
+//       if(socketId){
+//         console.log("socketId",socketId)
+//         io.to(socketId/*`user_${userId}`*/).emit('productAlert',{
+//           message:`The quantity of ${product.name} is low (Current: ${product.quantity})`,
+//           productId:product.prodId
+//         })
+//         console.log("message",message)
+//       }else{
+//         console.error(`User ${userId} is not connected.`);
+//       }
+//     }
+//     //create notification
+//     const notification = await Notification.create({
+//       message: `The quantity of ${product.name} is low (Current: ${product.quantity})`,
+//       type: 'product',
+//       userId: userId,
+//     })
+    
+//     // res.status(200).json({
+//     //   success: true,
+//     //   data: notification
+//     // });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to create notifications",
+//     });
+//   }
+// };
+
+const { Staff, Notification, SalesRecord, Product } = require("../models");
 const { getUserSocketMap } = require("../config/socket");
 const userSocketMap = getUserSocketMap();
 
-const createNotifications = async (io,productId,quantity,userId,res) => {
+const createNotifications = async (io, productId, quantity, userId, res) => {
   try {
-    //const io = app.get("io");
     const socketId = userSocketMap[userId];
-    //const userId = req.user.id;  
-    const product = await Product.findByPk(productId)
-    if(!product){
-      return res.status(404).json({message:"product not found"})
-    }
-    if(product.quantity < quantity){
-      return res.status(401).json({msg:"Insufficient stock"})
-    }
-    product.quantity -= quantity
-    await product.save()
     
-    if(product.quantity <= product.alertStatus){
-      //emit to particular user
-      console.log("socketId",socketId)
-      if(socketId){
-        console.log("socketId",socketId)
-        io.to(socketId/*`user_${userId}`*/).emit('productAlert',{
-          message:`The quantity of ${product.name} is low (Current: ${product.quantity})`,
-          productId:product.prodId
-        })
-        console.log("message",message)
-      }else{
+    // Fetch the product details
+    const product = await Product.findByPk(productId);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Ensure there is enough stock
+    if (product.quantity < quantity) {
+      return res.status(401).json({ msg: "Insufficient stock" });
+    }
+
+    // Update product quantity
+    product.quantity -= quantity;
+    await product.save();
+
+    // Send product alert if quantity is below alert threshold
+    if (product.quantity <= product.alertStatus) {
+      console.log("socketId:", socketId);
+
+      if (socketId) {
+        // Emit a 'productAlert' event to the user
+        const alertMessage = `The quantity of ${product.name} is low (Current: ${product.quantity})`;
+        io.to(socketId).emit('productAlert', {
+          message: alertMessage,
+          productId: product.prodId
+        });
+
+        console.log("Emitting message:", alertMessage);
+      } else {
         console.error(`User ${userId} is not connected.`);
       }
     }
-    //create notification
-    const notification = await Notification.create({
+
+    // Create a notification in the database
+    await Notification.create({
       message: `The quantity of ${product.name} is low (Current: ${product.quantity})`,
       type: 'product',
       userId: userId,
-    })
-    
-    // res.status(200).json({
-    //   success: true,
-    //   data: notification
-    // });
+    });
+
   } catch (error) {
-    console.error(error);
+    console.error("Notification Error:", error);
     res.status(500).json({
       success: false,
       message: "Failed to create notifications",

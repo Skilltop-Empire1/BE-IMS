@@ -3,14 +3,14 @@ const Joi = require("joi");
 const userValidation = Joi.object({
   userName: Joi.string().alphanum().max(30).required(),
   email: Joi.string().email().required(),
-  password: Joi.string().min(6).required()
+  password: Joi.string().required()
 });
 
 
 
 const validateLogin = Joi.object({
   email: Joi.string().email().required(),
-  password: Joi.string().min(6).required(),
+  password: Joi.string().required(),
 })
 
 const resetLink = Joi.object({
@@ -19,7 +19,7 @@ const resetLink = Joi.object({
 
 const validatePasswordReset = Joi.object({
   email: Joi.string().email().required(),
-  password: Joi.string().min(6).required(),
+  password: Joi.string().required(),
   confirmPassword: Joi.string().required(),
 })
 
