@@ -58,26 +58,22 @@ const userSocketMap = getUserSocketMap();
 const createNotifications = async (io, productId, quantity, userId, res) => {
   try {
     const socketId = userSocketMap[userId];
-    
+    console.log("userSocketId",socketId)
     // Fetch the product details
     const product = await Product.findByPk(productId);
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
-
     // Ensure there is enough stock
     if (product.quantity < quantity) {
       return res.status(401).json({ msg: "Insufficient stock" });
     }
-
     // Update product quantity
     product.quantity -= quantity;
     await product.save();
-
     // Send product alert if quantity is below alert threshold
     if (product.quantity <= product.alertStatus) {
       console.log("socketId:", socketId);
-
       if (socketId) {
         // Emit a 'productAlert' event to the user
         const alertMessage = `The quantity of ${product.name} is low (Current: ${product.quantity})`;
@@ -85,13 +81,11 @@ const createNotifications = async (io, productId, quantity, userId, res) => {
           message: alertMessage,
           productId: product.prodId
         });
-
         console.log("Emitting message:", alertMessage);
       } else {
         console.error(`User ${userId} is not connected.`);
       }
     }
-
     // Create a notification in the database
     await Notification.create({
       message: `The quantity of ${product.name} is low (Current: ${product.quantity})`,
