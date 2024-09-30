@@ -87,48 +87,32 @@ exports.updateProduct = async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
-    if(req.file){
+    let url = product.prodPhoto; 
+    if (req.file) {
       const result = await cloudinary.uploader.upload(req.file.path, {
         folder: "image",
         width: 300,
         crop: "scale",
       });
-      //Extract product url
-      const {url} = result;
-    await product.update({
-      name:name || product.name,
-      price:price || product.price,
-      itemCode:itemCode || product.itemCode,
-      prodPhoto: url , 
-      alertStatus:alertStatus || product.alertStatus,
-      quantity:quantity || product.quantity,
-      categoryId:categoryId || product.categoryId,
-      storeId:storeId || product.storeId,
-      storeAvailable:storeAvailable || product.storeAvailable,
-      prodDate:prodDate || product.prodDate,
-    });
-    res.status(200).json({ message: "Product updated successfully", product });
-  } else{
-    await product.update({
-      name:name || product.name,
-      price:price || product.price,
-      itemCode:itemCode || product.itemCode,
-      prodPhoto: product.prodPhoto, 
-      alertStatus:alertStatus || product.alertStatus,
-      quantity:quantity || product.quantity,
-      categoryId:categoryId || product.categoryId,
-      storeId:storeId || product.storeId,
-      storeAvailable:storeAvailable || product.storeAvailable,
-      prodDate:prodDate || product.prodDate,
-    });
-    res.status(200).json({ message: "Product updated successfully", product });
-  }
-}catch (error) {
-  res.status(400).json({ error: error.message });
-}
+      url = result.url; 
     }
-  
-    
+    await product.update({
+      name: name || product.name,
+      price: price || product.price,
+      itemCode: itemCode || product.itemCode,
+      prodPhoto: url, 
+      alertStatus: alertStatus || product.alertStatus,
+      quantity: quantity || product.quantity,
+      categoryId: categoryId || product.categoryId,
+      storeId: storeId || product.storeId,
+      storeAvailable: storeAvailable || product.storeAvailable,
+      prodDate: prodDate || product.prodDate,
+    });
+    res.status(200).json({ message: "Product updated successfully", product });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 
 // Delete a product
