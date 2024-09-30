@@ -17,6 +17,11 @@ const { createNotifications } = require("./notificationController");
     // }
       const newSalesRecord = await SalesRecord.create(req.body);
       const io = req.app.get("io");
+      if (!io) {
+        console.error("Socket.io instance not found");
+      } else {
+        console.log("Socket.io instance retrieved:", io);
+      }
       await createNotifications(io,req.body.productId,req.body.quantity,req.body.userId,res)
       return res.status(201).json(newSalesRecord);
     } catch (err) {
