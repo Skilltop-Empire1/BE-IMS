@@ -120,14 +120,10 @@ exports.getStoreInfo = async (req, res) => {
 
         // 2. Find the low stock item (using alertStatus or quantity < 10)
         const lowStockItem = await Product.findOne({
-            where: {
-                storeId,
-                [Op.or]: [
-                    { alertStatus: 'low-10' },
-                    { quantity: { [Op.lt]: 10 } }
-                ]
-            },
-            attributes: ['name', 'quantity']
+            where: { storeId },
+            attributes: ['name', 'quantity'],  // Get the name and quantity of the product
+            order: [['quantity', 'ASC']],       // Order by quantity in ascending order (lowest first)
+            limit: 1                            // Limit the result to the first one (lowest stock)
         });
 
         // 3. Find the most sold item
