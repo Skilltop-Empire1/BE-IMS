@@ -13,7 +13,7 @@ router.get('/filter',  storeController.filterByLocation);
 router.get('/overview',  storeController.getStoreOverview);
 
 //The two routes below are not in the actual project requirements or ticket but are there for future use
-router.delete('/delete/:storeId',loginJWTAthentication, storeController.deleteStoreById);  // Delete store by ID
-router.put('/edit/:storeId',loginJWTAthentication, storeController.editStoreById);//Edit store by ID 
+router.delete('/delete/:storeId',loginJWTAthentication,authorise("create"), storeController.deleteStoreById);  // Delete store by ID
+router.put('/edit/:storeId',loginJWTAthentication,authorise("edit"), storeController.editStoreById);//Edit store by ID 
 
 module.exports = router;
