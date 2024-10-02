@@ -23,11 +23,20 @@ const validatePasswordReset = Joi.object({
   confirmPassword: Joi.string().required(),
 })
 
+const changePassword = Joi.object({
+  email: Joi.string().email().required(),
+  oldPassword:Joi.string().required(),
+  password: Joi.string().required(),
+  confirmPassword: Joi.string().required(),
+})
+
+
 //*****export module */
 module.exports = {
   userValidation,
   validateLogin,
   validatePasswordReset,
+  changePassword,
   resetLink
 
 };
