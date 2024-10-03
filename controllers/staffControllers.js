@@ -223,6 +223,7 @@ const inviteStaff = async (req, res) => {
 
     const url = "https://skilltopims.com/";
     const newStaff = await Staff.create({
+      userId:user.userId,
       username,
       email,
       password: hashedPassword,  // Save the hashed password

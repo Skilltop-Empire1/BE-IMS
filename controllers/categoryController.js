@@ -1,4 +1,4 @@
-const { Category, Store, Product } = require('../models');
+const { Category, Store, Product,Staff } = require('../models');
 const {Sequelize,Op} = require("sequelize")
 const {createCategorySchema,updateCategorySchema} = require("../validations/categoryValidation")
 // Create a new category
@@ -30,6 +30,8 @@ exports.createCategory = async (req, res) => {
 // Get all categories with product counts
 exports.getAllCategories = async (req, res) => {
   try {
+    let { userId, role } = req.user; // Assuming req.user is the object
+    userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
     // Find all categories with product counts
     const categories = await Category.findAll({
       attributes: {
@@ -45,7 +47,8 @@ exports.getAllCategories = async (req, res) => {
         },
         {
           model: Store,
-          attributes: ['storeId', 'storeName']
+          attributes: ['storeId', 'storeName'],
+          where:{userId}
         }
       ],
       group: ['Category.catId', 'Store.storeId']  // Group by category and store
@@ -61,9 +64,11 @@ exports.getAllCategories = async (req, res) => {
 // Get a category by ID
 exports.getCategoryById = async (req, res) => {
   try {
+    let { userId, role } = req.user; // Assuming req.user is the object
+    userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
     const { catId } = req.params;
     const category = await Category.findByPk(catId, {
-      include: [{ model: Store }, { model: Product }]
+      include: [{ model: Store,where:{userId} }, { model: Product }]
     });
     if (!category) {
       return res.status(404).json({ error: 'Category not found' });
@@ -77,6 +82,8 @@ exports.getCategoryById = async (req, res) => {
 // Update a category
 exports.updateCategory = async (req, res) => {
   try {
+    let { userId, role } = req.user; // Assuming req.user is the object
+    userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
     const { catId } = req.params;
     const { storeId, name } = req.body;
     const category = await Category.findByPk(catId);
@@ -101,6 +108,8 @@ exports.updateCategory = async (req, res) => {
 // Delete a category
 exports.deleteCategory = async (req, res) => {
   try {
+    let { userId, role } = req.user; // Assuming req.user is the object
+    userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
     const { catId } = req.params;
     const category = await Category.findByPk(catId);
     if (!category) {
@@ -116,6 +125,8 @@ exports.deleteCategory = async (req, res) => {
 // Get categories by store
 exports.getCategoriesByStore = async (req, res) => {
   try {
+    let { userId, role } = req.user; // Assuming req.user is the object
+    userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
     const { storeId } = req.params;
     const categories = await Category.findAll({
       where: { storeId },
@@ -130,9 +141,11 @@ exports.getCategoriesByStore = async (req, res) => {
 // Get products in a category
 exports.getProductsByCategory = async (req, res) => {
   try {
+    let { userId, role } = req.user; // Assuming req.user is the object
+    userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
     const { catId } = req.params;
     const category = await Category.findByPk(catId, {
-      include: [{ model: Product }]
+      include: [{ model: Product },{model:Store,where:{userId}}]
     });
     if (!category) {
       return res.status(404).json({ error: 'Category not found' });
@@ -143,39 +156,11 @@ exports.getProductsByCategory = async (req, res) => {
   }
 };
 
-// exports.filterAllCategory = async (req, res) => {
-//   try {
-//     const {
-//       name,
-//       storeId,
-//     } = req.query;
-//     const where = {};
-//     if (name) {
-//       where.name = { [Op.iLike]: `%${name}%` };
-//     }
-//     if (storeId && !isNaN(parseInt(storeId))) {
-//       where.storeId = parseInt(storeId);
-//     } else if (storeId) {
-//       return res.status(400).json({ error: 'Invalid storeId format' });
-//     }
-//     // Pagination logic
-//     const itemsPerPage = limit ? parseInt(limit) : 10; // Default limit: 10
-//     const currentPage = page ? parseInt(page) : 1;
-//     const offset = (currentPage - 1) * itemsPerPage;
-//     // Find products with filters, sorting, and pagination
-//     const products = await Category.findAll({
-//       where,
-//       order,
-//       limit: itemsPerPage,
-//       offset,
-//     });
-//     res.status(200).json(products);
-//   } catch (error) {
-//     res.status(400).json({ error: error.message });
-//   }
-// };
+
 exports.filterAllCategory = async (req, res) => {
   try {
+    let { userId, role } = req.user; // Assuming req.user is the object
+    userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
     const { name, storeId, limit, page, orderBy, sortOrder } = req.query;
     const where = {};
 
@@ -211,6 +196,8 @@ exports.filterAllCategory = async (req, res) => {
       order, // Apply sorting
       limit: itemsPerPage, // Apply pagination
       offset,
+    },{
+      include:[{model:Store,where:{userId}}]
     });
 
     // Return the filtered, sorted, and paginated categories
