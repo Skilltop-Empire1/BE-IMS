@@ -201,9 +201,14 @@ class UserObject {
       } else {
 
          // ******************Create JWT token ***********************
-
-        const token = jwt.sign({id: account.userId, email: account.email, role: account.role}, process.env.SECRET_KEY, { expiresIn: '1h' })
-        res.json({token, id: account.id, email: account.email, role:account.role });
+        let id;
+        if(user){
+          id=user.userId
+        }else{
+          id=staff.staffId
+        }
+        const token = jwt.sign({id, email: account.email, role: account.role}, process.env.SECRET_KEY, { expiresIn: '1h' })
+        res.json({token, id: id, email: account.email, role:account.role });
         
           
       
@@ -219,15 +224,60 @@ class UserObject {
     }
   };
 
-  homePage = async (req, res) =>{
+
+  //*********change staff password */
+  changePassword = async (req, res) => {
+    const { email, password, confirmPassword } = req.body;
     
-    // Protected route example
-    res.send(`Welcome`);
-  }
+    //validate details
+    const { error } = userschema.validatePasswordReset.validate(req.body);
+    if (error) {
+      return res.status(404).json(error.details[0].message);
+    }
+
+    //**********queery to check if user exist */
+    const user = await userModel.User.findOne({ where: { email } });
+    const staff = await userModel.Staff.findOne({ where: { email } });
+    if (!user && !staff) {
+      return res.status(400).send("User does not exist");
+    }
+    if (password !== confirmPassword) {
+      return res.json({ msg: "Passwords does not match match" });
+    }
+//update code
+    const hash = await bcrypt.hash(password, 10);
+    try {
+      const userPasswordUpdate = await userModel.User.update(
+        { password: hash },
+        { where: { email: email } }
+      );
+
+      const staffPasswordUpdate = await userModel.Staff.update(
+        { password: hash },
+        { where: { email: email } }
+      );
+
+      if(userPasswordUpdate || staffPasswordUpdate){
+        return res
+          .status(200)
+          .json({ msg: "User password updated successfully" });
+      }else{
+        return res
+          .status(404)
+          .json({ msg: "Password update failed" });
+      }
+      
+    } catch (error) {
+      return error
+    }
+  };//end of method
 
 
-  logout = async (re, res)=>{
 
+
+
+  //logout
+  logout = async (req, res)=>{
     res.json({msg:'Logged out successfully.'}); // Inform the user
   }
 

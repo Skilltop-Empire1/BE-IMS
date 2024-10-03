@@ -11,10 +11,16 @@ const app = express()
 const server = http.createServer(app)
 
 const io = initializeSocket(server)
+if (io) {
+  console.log("Socket.io initialized successfully");
+} else {
+  console.error("Socket.io initialization failed");
+}
+
 require("./models")
 const {  swaggerUi,swaggerSpec} = require("./swagger")
 
-const whiteList = [process.env.CLIENT_URL || process.env.LOCALHOST,'http://localhost:5173']
+const whiteList = [process.env.CLIENT_URL, process.env.CLIENT2_URL,'http://localhost:5173']
 
 const corsOptions = {
     origin:function (origin,callback){

@@ -1,7 +1,7 @@
 
 const express = require('express');
 const router = express.Router();
-
+const Verifytoken = require("../middlewares/authMiddleware");
 const  {
     createSalesRecord,
     getSalesRecords, 
@@ -11,7 +11,7 @@ const  {
     getSalesRecordByProductId
   }  = require('../controllers/salesController');
 
-router.post('/create', createSalesRecord);
+router.post('/create',Verifytoken, createSalesRecord);
 
 router.get('/get', getSalesRecords);
 

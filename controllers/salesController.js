@@ -17,8 +17,18 @@ const { createNotifications } = require("./notificationController");
     // }
       const newSalesRecord = await SalesRecord.create(req.body);
       const io = req.app.get("io");
-      await createNotifications(io,req.body.productId,req.body.quantity,req.body.userId,res)
-      return res.status(201).json(newSalesRecord);
+      if (!io) {
+        console.error("Socket.io instance not found");
+      } else {
+        console.log("Socket.io instance retrieved:", io);
+      }
+      const userId = req.user.userId
+      await createNotifications(io,req.body.productId,req.body.quantity,userId,res)
+      return res.send({
+        status : 200,
+        suceessful:true,
+        data:newSalesRecord
+      });
     } catch (err) {
       console.error("Error creating sales record:", err);
       return res.status(500).json({ message: "Internal Server Error" });
@@ -33,11 +43,11 @@ const { createNotifications } = require("./notificationController");
         include: [
           {
             model: Product,
-            attributes: ['name'], // Include only the product name
+            attributes: ['name','price','prodPhoto'], // Include only the product name
           },
           {
             model: Store,
-            attributes: ['storeName'], // Include only the store name
+            attributes: ['storeName'], 
           }
         ]
       })

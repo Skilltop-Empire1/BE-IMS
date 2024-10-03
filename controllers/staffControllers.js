@@ -1,7 +1,7 @@
-const {Staff}  = require('../models');
+const {Staff, User}  = require('../models');
 const nodemailer = require('nodemailer')
 const veryfytoken = require('../middlewares/authMiddleware')
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 
     let mailTransporter = nodemailer.createTransport({
@@ -195,42 +195,86 @@ const deleteStaff = async (req, res) => {
 //     }
 //   };
 const inviteStaff = async (req, res) => {
-    try {
-      const { email, password,username} = req.body;
-      if (!email || !password) {
-        return res.status(400).json({ message: 'Email and password are required' });
-      }
-      const existingStaff = await Staff.findOne({ where: { email: email } });
-      if (existingStaff) {
-        return res.status(400).json({ message: 'Email already exists' });
-      }
-     
-      const newStaff = await Staff.create({
-        username,
-        email,
-        password, 
-        addedDate: new Date(),
-        status: 'active',
-        role: 'Employee',
-        storeName: 'Store 1', 
-      });
 
-      let mailOption = {
-        from: "kizohills@skilltopims.com",
-        to: newStaff.email,
-        subject: "You have been invited as a Staff Member",
-        html: `<h2> hi ${newStaff.username}! Hello, you have been invited to
-         join as a staff member. Please use this credentials 
-         to log in email ${newStaff.email} and password${password}</h2>`
+      // const { email, password,username} = req.body;
+      // if (!email || !password) {
+      //   return res.status(400).json({ message: 'Email and password are required' });
+      // }
+      // const existingStaff = await Staff.findOne({ where: { email: email } });
+      // if (existingStaff) {
+      //   return res.status(400).json({ message: 'Email already exists' });
+      // }
+     
+      // const newStaff = await Staff.create({
+      //   username,
+      //   email,
+      //   password, 
+      //   addedDate: new Date(),
+      //   status: 'active',
+      //   role: 'Employee',
+      //   storeName: 'Store 1', 
+      // });
+  try {
+    const user = req.user;
+    console.log(user);
+
+    const { email, password, username } = req.body;
+    if (!email || !password, !username) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    // Check if the email already exists in staff
+    const existingStaff = await Staff.findOne({ where: { email: email } });
+    if (existingStaff) {
+      return res.status(400).json({ message: 'Email already exists as a staff' });
+    }
+
+    const userExistingStaff = await User.findOne({ where: { email: email } });
+    if (userExistingStaff) {
+      return res.status(400).json({ message: 'Email already exists as a user' });
+    }
+
+    // // Check if the email already exists
+    // const existingUser = await User.findOne({ where: { email: email } });
+    // if (existingUser) {
+    //   return res.status(400).json({ message: 'Email already exists' });
+    // }
+
+
+    // Hash the password before saving it
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    const url = "https://skilltopims.com/";
+    const newStaff = await Staff.create({
+      userId:user.userId,
+      username,
+      email,
+      password: hashedPassword,  // Save the hashed password
+      addedDate: new Date(),
+      status: 'active',
+      role: 'Employee',
+      storeName: 'Store 1',
+    });
+    let mailOption = {
+      from: process.env.EMAIL_USER,
+      to: newStaff.email,
+      subject: "You have been invited as a Staff Member",
+      html: `<h2>Hi ${newStaff.username},</h2>
+      <p>You have been invited by ${user.userName} to join as a staff member.</p>
+      <p>Please use the credentials below to log in by clicking on this <a href="${url}">link</a>:</p>
+      <p>Email: ${newStaff.email}<br>
+      Password: ${password}</p>` 
+    };
+
+    // Sending the email
+    mailTransporter.sendMail(mailOption, function (error, info) {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log('Email sent to the staff account');
       }
-      // sending email
-      mailTransporter.sendMail(mailOption, function(error, info) {
-        if (error) {
-          console.log(error);
-        } else {
-          console.log('email is sent to the staff account');
-        }
-      })
+    });
 
     return res.status(201).json({
       success: true,
@@ -250,4 +294,4 @@ const inviteStaff = async (req, res) => {
 // Export class instance
 module.exports = {
     getStaffList, getStaffById, deleteStaff, updateStaff, inviteStaff
-};
+}
