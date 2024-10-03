@@ -53,7 +53,7 @@ const authorize = require("../middlewares/rolePermission");
  *       400:
  *         description: Invalid input
  */
-router.post('/',loginJWTAthentication,authorize("create"), categoryController.createCategory);
+router.post('/',loginJWTAthentication, categoryController.createCategory);
 /**
  * @swagger
  * /filter:
@@ -98,7 +98,7 @@ router.post('/',loginJWTAthentication,authorize("create"), categoryController.cr
  *         description: Server error
  */
 
-router.get("/filter", categoryController.filterAllCategory);
+router.get("/filter",loginJWTAthentication,categoryController.filterAllCategory);
 
 /**
  * @swagger
@@ -123,7 +123,7 @@ router.get("/filter", categoryController.filterAllCategory);
  *                   storeId:
  *                     type: string
  */
-router.get('/', categoryController.getAllCategories);
+router.get('/',loginJWTAthentication,categoryController.getAllCategories);
 
 /**
  * @swagger
@@ -155,7 +155,7 @@ router.get('/', categoryController.getAllCategories);
  *       404:
  *         description: Category not found
  */
-router.get('/:catId', categoryController.getCategoryById);
+router.get('/:catId', loginJWTAthentication,categoryController.getCategoryById);
 
 /**
  * @swagger
@@ -191,7 +191,7 @@ router.get('/:catId', categoryController.getCategoryById);
  *       404:
  *         description: Category not found
  */
-router.put('/:catId',loginJWTAthentication,authorize("edit"), categoryController.updateCategory);
+router.put('/:catId',loginJWTAthentication, categoryController.updateCategory);
 
 /**
  * @swagger
@@ -212,7 +212,7 @@ router.put('/:catId',loginJWTAthentication,authorize("edit"), categoryController
  *       404:
  *         description: Category not found
  */
-router.delete('/:catId',loginJWTAthentication,authorize("approval"), categoryController.deleteCategory);
+router.delete('/:catId',loginJWTAthentication, categoryController.deleteCategory);
 
 /**
  * @swagger
@@ -244,7 +244,7 @@ router.delete('/:catId',loginJWTAthentication,authorize("approval"), categoryCon
  *                   storeId:
  *                     type: string
  */
-router.get('/store/:storeId', categoryController.getCategoriesByStore);
+router.get('/store/:storeId', loginJWTAthentication,categoryController.getCategoriesByStore);
 
 /**
  * @swagger
@@ -280,7 +280,7 @@ router.get('/store/:storeId', categoryController.getCategoriesByStore);
  *       404:
  *         description: Category not found
  */
-router.get('/:catId/products', categoryController.getProductsByCategory);
+router.get('/:catId/products',loginJWTAthentication, categoryController.getProductsByCategory);
 
 
 
