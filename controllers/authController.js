@@ -61,7 +61,7 @@ class UserObject {
 
       const formLink = ""
 
-      let mailOptions = {
+      let mailOptions = await {
         from: {
           name: "IMS password reset link",
           address: process.env.EMAIL_USER,
@@ -69,7 +69,7 @@ class UserObject {
         to: user.email,
         subject: "IMS Reset link",
         text: "Click on the link to proceed with the password reset",
-        html: `<a href= ${process.env.CLIENT_URL}/passwordConfirmation >Click here to reset your password: ${randomText}</a>,`, // html body
+        html: `<a href= ${process.env.CLIENT2_URL}/passwordConfirmation >Click here to reset your password: ${randomText}</a>,`, // html body
       };
 
       res.json({
@@ -209,14 +209,6 @@ class UserObject {
         }
         const token = jwt.sign({id, email: account.email, role: account.role}, process.env.SECRET_KEY, { expiresIn: '1h' })
         res.json({token, id: id, email: account.email, role:account.role });
-        
-          
-      
-
-        // res.cookie("token", token, {
-        //   httpOnly: true,
-        // })
-         // return res.status(200).json({ msg: "Authentication success" });
       }
     } catch (error) {
       console.error(error);
