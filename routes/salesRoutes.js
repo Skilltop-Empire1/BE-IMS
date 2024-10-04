@@ -1,6 +1,7 @@
 
 const express = require('express');
 const router = express.Router();
+const veryfytoken = require('../middlewares/authMiddleware')
 const  {
     createSalesRecord,
     getSalesRecords, 
@@ -12,14 +13,14 @@ const  {
 
 router.post('/create', createSalesRecord);
 
-router.get('/get', getSalesRecords);
+router.get('/get', veryfytoken, getSalesRecords);
 
 router.get('/product/:productId', getSalesRecordByProductId);
 
-router.get('/get/:id', getSalesRecordById);
+router.get('/get/:id',veryfytoken, getSalesRecordById);
 
-router.put('/update/:id',updateSalesRecord);
+router.put('/update/:id',veryfytoken, updateSalesRecord);
 
-router.delete('/delete/:id',deleteSalesRecord);
+router.delete('/delete/:id',veryfytoken, deleteSalesRecord);
 
 module.exports = router;

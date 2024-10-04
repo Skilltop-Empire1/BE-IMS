@@ -83,7 +83,7 @@ router.post('/', upload.single("prodPhoto"), loginJWTAthentication,productContro
  *                   storeId:
  *                     type: string
  */
-router.get('/',loginJWTAthentication,productController.getAllProducts);
+router.get('/',loginJWTAthentication,authorize("Products", "view"), productController.getAllProducts);
 
 /**
  * @swagger

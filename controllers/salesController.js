@@ -24,7 +24,11 @@ const { createNotifications } = require("./notificationController");
       }
       const userId = req.user.userId
       await createNotifications(io,req.body.productId,req.body.quantity,userId,res)
-      return res.status(201).json(newSalesRecord);
+      return res.send({
+        status : 200,
+        suceessful:true,
+        data:newSalesRecord
+      });
     } catch (err) {
       console.error("Error creating sales record:", err);
       return res.status(500).json({ message: "Internal Server Error" });
@@ -33,9 +37,11 @@ const { createNotifications } = require("./notificationController");
 
   // Get all sales records
   const getSalesRecords = async (req, res) => {
+    const { userId } = req.user;
     try {
     //  const salesRecords = await SalesRecord.findAll();
-      const salesRecords = await SalesRecord.findAll({
+      const salesRecords = await SalesRecord.findAll({where: { userId: userId },
+
         include: [
           {
             model: Product,
@@ -43,7 +49,7 @@ const { createNotifications } = require("./notificationController");
           },
           {
             model: Store,
-            attributes: ['storeName'], // Include only the store name
+            attributes: ['storeName'], 
           }
         ]
       })
