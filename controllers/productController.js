@@ -94,6 +94,7 @@ exports.updateProduct = async (req, res) => {
         width: 300,
         crop: "scale",
       });
+      
       url = result.url; 
     }
     await product.update({

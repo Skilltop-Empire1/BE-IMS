@@ -6,15 +6,18 @@ const { getStaffList,
     getStaffById, 
     deleteStaff, 
     updateStaff, 
-    inviteStaff } = require('../controllers/staffControllers');
+    inviteStaff,
+    togglePermission } = require('../controllers/staffControllers');
 
-router.get('/', getStaffList);
+router.get('/', veryfytoken, getStaffList);
 
-router.get('/:id', getStaffById);
+router.get('/:id',veryfytoken, getStaffById);
 
-router.put('/:id', updateStaff);
+router.put('/update/:id',veryfytoken, updateStaff);
 
-router.delete('/:id', deleteStaff);
+router.put('/updatepem/:id',veryfytoken, togglePermission);
+
+router.delete('/delete/:id',veryfytoken, deleteStaff);
 
 router.post('/invite',veryfytoken, inviteStaff);
 

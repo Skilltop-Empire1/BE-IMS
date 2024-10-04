@@ -37,9 +37,11 @@ const { createNotifications } = require("./notificationController");
 
   // Get all sales records
   const getSalesRecords = async (req, res) => {
+    const { userId } = req.user;
     try {
     //  const salesRecords = await SalesRecord.findAll();
-      const salesRecords = await SalesRecord.findAll({
+      const salesRecords = await SalesRecord.findAll({where: { userId: userId },
+
         include: [
           {
             model: Product,

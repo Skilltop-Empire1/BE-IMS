@@ -135,65 +135,7 @@ const deleteStaff = async (req, res) => {
     }
 };
 
-// Create staff (Invite staff)
-// const inviteStaff = async (req, res) => {
-//     try {
-//       const user = req.user 
-//       console.log(user);
-//       const { email, password,username} = req.body;
-//       if (!email || !password) {
-//         return res.status(400).json({ message: 'Email and password are required' });
-//       }
-//       const existingStaff = await Staff.findOne({ where: { email: email } });
-//       if (existingStaff) {
-//         return res.status(400).json({ message: 'Email already exists' });
-//       }
-//       const url = "https://skilltopims.com/";
-//       const newStaff = await Staff.create({
-//         username,
-//         email,
-//         password, 
-//         addedDate: new Date(),
-//         status: 'active',
-//         role: 'Employee',
-//         storeName: 'Store 1', 
-//       });
-      
 
-//       let mailOption = {
-//         from: process.env.EMAIL_USER,
-//         to: newStaff.email,
-//         subject: "You have been invited as a Staff Member",
-//         html: `<h2>Hi ${newStaff.username},</h2>
-//        <p>You have been invited by ${user.email} to join as a staff member.</p>
-//        <p>Please use the credentials below to log in by clicking on this <a href="${url}">link</a>:</p>
-//        <p>Email: ${newStaff.email}<br>
-//        Password: ${newStaff.password}</p>`
-//       }
-//       // sending email
-//       mailTransporter.sendMail(mailOption, function(error, info) {
-//         if (error) {
-//           console.log(error);
-//         } else {
-//           console.log('email is sent to the staff account');
-//         }
-//       })
-
-//       return res.status(201).json({
-//         success: true,
-//         message: 'Staff invited successfully, email is sent to the staff account',
-//         data: {
-//           id: newStaff.id,
-//           email: newStaff.email,
-//           status: newStaff.status,
-//           role: newStaff.role,
-//         },
-//       });
-//     } catch (err) {
-//       console.error('Error inviting staff:', err);
-//       return res.status(500).json({ message: 'Internal Server Error' });
-//     }
-//   };
 const inviteStaff = async (req, res) => {
 
       // const { email, password,username} = req.body;
@@ -291,7 +233,50 @@ const inviteStaff = async (req, res) => {
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
+
+
+const togglePermission = async (req, res) => {
+  try {
+    const role =req.user.role
+    if (role !=="superAdmin") {
+      return res.status(401).json({ message: 'you are not allowed to access this this route' });
+    }
+    const { id: staffId } = req.params;
+    const { label, permission } = req.body;
+
+    // Find the staff member
+    const staff = await Staff.findOne({ where: { staffId } });
+    if (!staff) {
+      return res.status(404).json({ message: 'Staff not found' });
+    }
+
+    // Update the permissions object
+    const updatedPermissions = staff.permissions.map((perm) => {
+      if (perm.label === label) {
+        perm[permission] = !perm[permission];
+      }
+      return perm;
+    });
+   // updatedPermissions.save()
+   // Save updated permissions
+    const permupdate = await Staff.update(
+      { permissions: updatedPermissions },
+      { where: { staffId } }
+    );
+    console.log("updatedPermissions",updatedPermissions );
+        
+    return res.status(200).json({
+      message: `Permission ${permission} for ${label} updated successfully`,
+      permissions: updatedPermissions,
+    });
+  } catch (err) {
+    console.error('Error updating permission:', err);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
 // Export class instance
 module.exports = {
-    getStaffList, getStaffById, deleteStaff, updateStaff, inviteStaff
-}
+    getStaffList, getStaffById, deleteStaff, updateStaff, inviteStaff, togglePermission
+};

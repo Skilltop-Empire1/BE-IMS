@@ -52,7 +52,7 @@ const authorize = require('../middlewares/rolePermission');
  *       400:
  *         description: Invalid input
  */
-router.post('/', upload.single("image"), loginJWTAthentication,authorize("create"),productController.createProduct);
+router.post('/', upload.single("prodPhoto"), loginJWTAthentication,authorize("create"),productController.createProduct);
 
 /**
  * @swagger
@@ -83,7 +83,7 @@ router.post('/', upload.single("image"), loginJWTAthentication,authorize("create
  *                   storeId:
  *                     type: string
  */
-router.get('/', productController.getAllProducts);
+router.get('/',loginJWTAthentication,authorize("Products", "view"), productController.getAllProducts);
 
 /**
  * @swagger
@@ -226,7 +226,7 @@ router.get('/:prodId', productController.getProductById);
  *       404:
  *         description: Product not found
  */
-router.put('/:prodId',upload.single("image"),loginJWTAthentication,authorize("edit"), productController.updateProduct);
+router.put('/:prodId',upload.single("prodPhoto"),loginJWTAthentication,authorize("edit"), productController.updateProduct);
 
 /**
  * @swagger
