@@ -38,6 +38,7 @@ const bcrypt = require('bcryptjs');
         status: staff.status,
         role: staff.role,
         store_name: staff.storeName,
+        permissions:staff.permissions
       }));
 
       return res.status(200).json({
@@ -197,7 +198,7 @@ const inviteStaff = async (req, res) => {
       status: 'active',
       role: 'Employee',
       storeName: 'Store 1',
-    });
+  });
     let mailOption = {
       from: process.env.EMAIL_USER,
       to: newStaff.email,
