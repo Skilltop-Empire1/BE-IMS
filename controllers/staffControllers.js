@@ -187,7 +187,7 @@ const inviteStaff = async (req, res) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    const url = "https://skilltopims.com/";
+    const url = process.env.CLIENT_URL;
     const newStaff = await Staff.create({
       userId:user.userId,
       username,
