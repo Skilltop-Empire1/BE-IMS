@@ -89,6 +89,7 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   Staff.associate = (models) => {
+    Staff.hasOne(models.Profile, { foreignKey: "staffId" });
     Staff.belongsTo(models.Store, { foreignKey: 'storeId' });
     Staff.belongsTo(models.User, { foreignKey: 'userId' });
   };
