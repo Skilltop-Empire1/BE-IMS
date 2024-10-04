@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path'); 
 const cloudinary = require('../config/cloudinary');
 const { storeSchema } = require('../validations/storeValidation');
-const { Store , Product, SalesRecord, Category,User} = require('../models');
+const { Store , Product, SalesRecord, Category,User,Staff} = require('../models');
 const { validatePhoneNumber } = require('../validations/numberValidator');
 const { Op, Sequelize } = require('sequelize');
 const { v4: uuidv4 } = require('uuid');
@@ -92,7 +92,8 @@ const upload = multer({
 
 exports.getAllStores = async (req, res) => {
     try {
-        const { userId } = req.user;
+        let { userId,role } = req.user;
+        userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
         const stores = await Store.findAll({
             where: { userId: userId }
         });
@@ -103,7 +104,6 @@ exports.getAllStores = async (req, res) => {
                 message: "No stores have been created yet. Please visit the 'Store' section to create your store and start managing your inventory."
             });
         }
-
         // If stores exist, return them
         res.status(200).json(stores);
     } catch (error) {
@@ -114,7 +114,8 @@ exports.getAllStores = async (req, res) => {
 
 exports.getStoreInfo = async (req, res) => {
     const storeId = req.params.storeId;
-    const { userId } = req.user;
+    let { userId,role } = req.user;
+    userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
     try {
         // 0. Fetch the store details including noOfStaff
         const store = await Store.findOne({
@@ -243,7 +244,8 @@ exports.searchStore = async (req, res) => {
 
 
 exports.filterByLocation = async (req, res) => {
-    const { userId } = req.user;  // Get the authenticated user's ID
+    let { userId,role } = req.user;
+    userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
 
     try {
         // Fetch all stores owned by the user and get unique locations
@@ -270,7 +272,8 @@ exports.filterByLocation = async (req, res) => {
 
 
 exports.getStoreOverview = async (req, res) => {
-    const { userId } = req.user;  // Get authenticated user's ID
+    let { userId,role } = req.user;
+    userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
 
     try {
         // Fetch all stores owned by the user along with product details
@@ -323,7 +326,7 @@ exports.getStoreOverview = async (req, res) => {
 // Delete store by ID (THIS FNCTION IS NOT USED IN THE CURRENT PROJ BUT IS HERE JUST IN CASE)
 exports.deleteStoreById = async (req, res) => {
     const storeId = req.params.storeId; // Extract store ID from request parameters
-
+    
     try {
         const store = await Store.findByPk(storeId);
 
