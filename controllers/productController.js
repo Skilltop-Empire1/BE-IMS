@@ -1,4 +1,4 @@
-const { Product } = require('../models'); // Import the Product model
+const { Product,Staff,Store } = require('../models'); // Import the Product model
 const { Op } = require('sequelize');
 const path = require("path")
 const cloudinary = require("../config/cloudinary")
@@ -52,8 +52,11 @@ exports.createProduct = async (req, res) => {
 // Get all products
 exports.getAllProducts = async (req, res) => {
   try {
-    console.log("userId",req.user)
-    const products = await Product.findAll({});
+    let { userId, role } = req.user; // Assuming req.user is the object
+    userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
+    const products = await Product.findAll({
+      include:[{model:Store,where:{userId}}]
+    });
     res.status(200).json(products);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -133,7 +136,9 @@ exports.deleteProduct = async (req, res) => {
 // Get products by category
 exports.getProductsByCategory = async (req, res) => {
   try {
-    const products = await Product.findAll({ where: { categoryId: req.params.categoryId } });
+    let { userId, role } = req.user; // Assuming req.user is the object
+    userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
+    const products = await Product.findAll({include:[{model:Store,where:{userId}}], where: { categoryId: req.params.categoryId } });
     res.status(200).json(products);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -143,7 +148,9 @@ exports.getProductsByCategory = async (req, res) => {
 // Get products by store
 exports.getProductsByStore = async (req, res) => {
   try {
-    const products = await Product.findAll({ where: { storeId: req.params.storeId } });
+    let { userId, role } = req.user; // Assuming req.user is the object
+    userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
+    const products = await Product.findAll({include:[{model:Store,where:{userId}}], where: { storeId: req.params.storeId } });
     res.status(200).json(products);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -172,8 +179,11 @@ exports.updateProductStock = async (req, res) => {
 // Filter products by availability
 exports.getProductsByAvailability = async (req, res) => {
   try {
+    let { userId, role } = req.user; // Assuming req.user is the object
+    userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
     const { availability } = req.query; 
     const products = await Product.findAll({
+      include:[{model:Store,where:{userId}}],
       where: {
         storeAvailable: availability
       }
@@ -188,6 +198,8 @@ exports.getProductsByAvailability = async (req, res) => {
 
 exports.filterAllProducts = async (req, res) => {
   try {
+    let { userId, role } = req.user; // Assuming req.user is the object
+    userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
     const {
       name,
       categoryId,
@@ -244,6 +256,8 @@ exports.filterAllProducts = async (req, res) => {
       order,
       limit: itemsPerPage,
       offset,
+    },{
+      include:[{model:Store,where:{userId}}]
     });
     res.status(200).json(products);
   } catch (error) {

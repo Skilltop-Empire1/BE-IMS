@@ -225,10 +225,10 @@ class UserObject {
 
   //*********change staff password */
   changePassword = async (req, res) => {
-    const { email, password, confirmPassword } = req.body;
+    const { email, oldPassword, password, confirmPassword } = req.body;
     
     //validate details
-    const { error } = userschema.validatePasswordReset.validate(req.body);
+    const { error } = userschema.changePassword.validate(req.body);
     if (error) {
       return res.status(404).json(error.details[0].message);
     }
@@ -236,13 +236,18 @@ class UserObject {
     //**********queery to check if user exist */
     const user = await userModel.User.findOne({ where: { email } });
     const staff = await userModel.Staff.findOne({ where: { email } });
-    if (!user && !staff) {
+    
+    const account = user || staff
+    const isMatch = await bcrypt.compare(oldPassword, account.password);
+    if (!isMatch) {return res.status(404).json({ msg: "current password is incorrect" });}
+    if (!account) {
       return res.status(400).send("User does not exist");
-    }
+    } 
     if (password !== confirmPassword) {
-      return res.json({ msg: "Passwords does not match match" });
+      return res.json({ msg: "New passwords does not match match" });
     }
 //update code
+
     const hash = await bcrypt.hash(password, 10);
     try {
       const userPasswordUpdate = await userModel.User.update(

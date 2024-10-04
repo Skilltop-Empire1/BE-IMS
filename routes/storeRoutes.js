@@ -6,11 +6,11 @@ const loginJWTAthentication = require('../middlewares/authMiddleware')
 const authorise = require('../middlewares/rolePermission')
 // const { authenticateToken } = require('../middlewares/authMiddleware');
 router.post('/create',loginJWTAthentication,authorise("create"), storeController.createStore);
-router.get('/all',  storeController.getAllStores);
-router.get('/:storeId/info',  storeController.getStoreInfo);
+router.get('/all', loginJWTAthentication, storeController.getAllStores);
+router.get('/:storeId/info',loginJWTAthentication, storeController.getStoreInfo);
 router.get('/search',  storeController.searchStore);
-router.get('/filter',  storeController.filterByLocation);
-router.get('/overview',  storeController.getStoreOverview);
+router.get('/filter',loginJWTAthentication,  storeController.filterByLocation);
+router.get('/overview',loginJWTAthentication,  storeController.getStoreOverview);
 
 //The two routes below are not in the actual project requirements or ticket but are there for future use
 router.delete('/delete/:storeId',loginJWTAthentication,authorise("create"), storeController.deleteStoreById);  // Delete store by ID

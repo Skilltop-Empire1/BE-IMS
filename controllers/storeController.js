@@ -89,12 +89,23 @@ const upload = multer({
     });
 };
 
+
 exports.getAllStores = async (req, res) => {
     try {
-        // console.log("userId",req.user.dataValues.userId);
-        const stores = await Store.findAll();
-        res.json(stores);
+        const { userId } = req.user;
+        const stores = await Store.findAll({
+            where: { userId: userId }
+        });
 
+        // Check if the user has no stores
+        if (stores.length === 0) {
+            return res.status(200).json({
+                message: "No stores have been created yet. Please visit the 'Store' section to create your store and start managing your inventory."
+            });
+        }
+
+        // If stores exist, return them
+        res.status(200).json(stores);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -103,11 +114,11 @@ exports.getAllStores = async (req, res) => {
 
 exports.getStoreInfo = async (req, res) => {
     const storeId = req.params.storeId;
-
+    const { userId } = req.user;
     try {
         // 0. Fetch the store details including noOfStaff
         const store = await Store.findOne({
-            where: { storeId },
+            where: { storeId, userId },
             attributes: ['noOfStaff'] 
         });
 
@@ -230,55 +241,84 @@ exports.searchStore = async (req, res) => {
     }
 };
 
+
 exports.filterByLocation = async (req, res) => {
+    const { userId } = req.user;  // Get the authenticated user's ID
+
     try {
-        // Fetch all stores and get unique locations
-        const stores = await Store.findAll({ attributes: ['location'] }); // Only get the 'location' 
-        const locations = [...new Set(stores.map(store => store.location))]; // Remove duplicates
-        
+        // Fetch all stores owned by the user and get unique locations
+        const stores = await Store.findAll({
+            where: { userId },  // Ensure the user only sees their own stores
+            attributes: ['location']
+        });
+
+        // Remove duplicate locations
+        const locations = [...new Set(stores.map(store => store.location))];
+
+        // Check if there are no stores
+        if (locations.length === 0) {
+            return res.status(200).json({
+                message: "No stores have been created yet. Once you've added a store, you can filter them by location."
+            });
+        }
+
         res.status(200).json(locations);
     } catch (error) {
         res.status(500).json({ error: 'Error fetching locations' });
     }
 };
 
+
 exports.getStoreOverview = async (req, res) => {
+    const { userId } = req.user;  // Get authenticated user's ID
+
     try {
-      // Fetch all stores
-      const stores = await Store.findAll({
-        include: [
-          {
-            model: Product,
-            attributes: ['quantity', 'price'],  // Fetch quantity and price for stock calculations
-          },
-        ],
-      });
-  
-      const storeOverview = stores.map(store => {
-        const totalItems = store.Products.reduce((acc, product) => acc + product.quantity, 0); // Total items
-        const totalStockValue = store.Products.reduce((acc, product) => acc + (product.price * product.quantity), 0); // Total stock value
+        // Fetch all stores owned by the user along with product details
+        const stores = await Store.findAll({
+            where: { userId },  // Restrict to the user's stores
+            include: [
+                {
+                    model: Product,
+                    attributes: ['quantity', 'price'],  // Fetch quantity and price for stock calculations
+                },
+            ],
+        });
 
-        return {
-          storeId: store.storeId,
-          storeName: store.storeName,
-          totalItems: totalItems || 'N/A',  // In case there's no data
-          totalStockValue: totalStockValue || 'N/A', // In case there's no data
-          noOfStaff: store.noOfStaff || 'N/A',  // Use staff count from the Store model
-        };
-      });
+        // Check if no stores exist
+        if (stores.length === 0) {
+            return res.status(200).json({
+                message: "No stores have been created yet. Please visit the 'Store' section to create your first store and start tracking your inventory."
+            });
+        }
 
-      return res.status(200).json({
-        success: true,
-        data: storeOverview,
-      });
+        // Map over the stores to calculate the totals
+        const storeOverview = stores.map(store => {
+            const totalItems = store.Products?.reduce((acc, product) => acc + product.quantity, 0) || 0;  // Handle cases where no products exist
+            const totalStockValue = store.Products?.reduce((acc, product) => acc + (product.price * product.quantity), 0) || 0;
+
+            return {
+                storeId: store.storeId,
+                storeName: store.storeName,
+                totalItems: totalItems,  // Total items in the store
+                totalStockValue: totalStockValue,  // Total value of stock in the store
+                noOfStaff: store.noOfStaff || 'N/A',  // Number of staff (if available)
+            };
+        });
+
+        return res.status(200).json({
+            success: true,
+            data: storeOverview,
+        });
     } catch (error) {
-      console.error(error);
-      return res.status(500).json({
-        success: false,
-        message: 'Server Error',
-      });
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: 'Server Error',
+        });
     }
-  };
+};
+
+
 
 // Delete store by ID (THIS FNCTION IS NOT USED IN THE CURRENT PROJ BUT IS HERE JUST IN CASE)
 exports.deleteStoreById = async (req, res) => {
