@@ -207,7 +207,13 @@ class UserObject {
         }else{
           id=staff.staffId
         }
-        const token = jwt.sign({id, email: account.email, role: account.role}, process.env.SECRET_KEY, { expiresIn: '1h' })
+        let permission
+        if (staff) {
+          permission=staff.permissions
+        };
+        console.log( "authpermission", permission);
+        console.log( "email", account.email);
+        const token = jwt.sign({id, email: account.email, role: account.role, permission}, process.env.SECRET_KEY, { expiresIn: '1h' })
         res.json({token, id: id, email: account.email, role:account.role });
       }
     } catch (error) {

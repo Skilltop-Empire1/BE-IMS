@@ -37,6 +37,50 @@ module.exports = (sequelize, DataTypes) => {
     permissions: {
       type: DataTypes.JSON,
       allowNull: true,
+      defaultValue: [
+        {
+          label: 'Store',
+          view: true,
+          create: false,
+          edit: false,
+          approval: false,
+        },
+        {
+          label: 'Products',
+          view: false,
+          create: true,
+          edit: true,
+          approval: false,
+        },
+        {
+          label: 'Users',
+          view: true,
+          create: false,
+          edit: false,
+          approval: false,
+        },
+        {
+          label: 'Settings',
+          view: false,
+          create: false,
+          edit: false,
+          approval: false,
+        },
+        {
+          label: 'Sales Records',
+          view: false,
+          create: false,
+          edit: false,
+          approval: true,
+        },
+        {
+          label: 'Accounts',
+          view: false,
+          create: true,
+          edit: false,
+          approval: true,
+        },
+      ],
     },
   });
 
