@@ -138,25 +138,6 @@ const deleteStaff = async (req, res) => {
 
 
 const inviteStaff = async (req, res) => {
-
-      // const { email, password,username} = req.body;
-      // if (!email || !password) {
-      //   return res.status(400).json({ message: 'Email and password are required' });
-      // }
-      // const existingStaff = await Staff.findOne({ where: { email: email } });
-      // if (existingStaff) {
-      //   return res.status(400).json({ message: 'Email already exists' });
-      // }
-     
-      // const newStaff = await Staff.create({
-      //   username,
-      //   email,
-      //   password, 
-      //   addedDate: new Date(),
-      //   status: 'active',
-      //   role: 'Employee',
-      //   storeName: 'Store 1', 
-      // });
   try {
     const user = req.user;
     console.log(user);
