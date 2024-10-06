@@ -53,7 +53,7 @@ const authorize = require("../middlewares/rolePermission");
  *       400:
  *         description: Invalid input
  */
-router.post('/',loginJWTAthentication, categoryController.createCategory);
+router.post('/',loginJWTAthentication,categoryController.createCategory);
 /**
  * @swagger
  * /filter:

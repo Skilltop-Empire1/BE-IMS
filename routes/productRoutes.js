@@ -52,7 +52,7 @@ const authorize = require('../middlewares/rolePermission');
  *       400:
  *         description: Invalid input
  */
-router.post('/', upload.single("prodPhoto"), loginJWTAthentication,productController.createProduct);
+router.post('/', upload.single("prodPhoto"), loginJWTAthentication,authorize("Products", "create"),productController.createProduct);
 
 /**
  * @swagger
@@ -110,7 +110,7 @@ router.get('/',loginJWTAthentication,authorize("Products", "view"), productContr
  *                   stock:
  *                     type: integer
  */
-router.get('/availability', loginJWTAthentication,productController.getProductsByAvailability);
+router.get('/availability', loginJWTAthentication,authorize("Products", "view"),productController.getProductsByAvailability);
 
 /**
  * @swagger
@@ -148,7 +148,7 @@ router.get('/availability', loginJWTAthentication,productController.getProductsB
  *                   stock:
  *                     type: integer
  */
-router.get('/filter', loginJWTAthentication,productController.filterAllProducts);
+router.get('/filter', loginJWTAthentication,authorize("Products", "view"),productController.filterAllProducts);
 
 /**
  * @swagger
@@ -186,7 +186,7 @@ router.get('/filter', loginJWTAthentication,productController.filterAllProducts)
  *       404:
  *         description: Product not found
  */
-router.get('/:prodId', loginJWTAthentication,productController.getProductById);
+router.get('/:prodId', loginJWTAthentication,authorize("Products", "view"),productController.getProductById);
 
 /**
  * @swagger
@@ -226,7 +226,7 @@ router.get('/:prodId', loginJWTAthentication,productController.getProductById);
  *       404:
  *         description: Product not found
  */
-router.put('/:prodId',upload.single("prodPhoto"),loginJWTAthentication, productController.updateProduct);
+router.put('/:prodId',upload.single("prodPhoto"),loginJWTAthentication,authorize("Products", "edit"),productController.updateProduct);
 
 /**
  * @swagger
@@ -247,7 +247,7 @@ router.put('/:prodId',upload.single("prodPhoto"),loginJWTAthentication, productC
  *       404:
  *         description: Product not found
  */
-router.delete('/:prodId',loginJWTAthentication, productController.deleteProduct);
+router.delete('/:prodId',loginJWTAthentication,authorize("Products", "approval"), productController.deleteProduct);
 
 /**
  * @swagger
@@ -283,7 +283,7 @@ router.delete('/:prodId',loginJWTAthentication, productController.deleteProduct)
  *                   categoryId:
  *                     type: string
  */
-router.get('/category/:categoryId',loginJWTAthentication, productController.getProductsByCategory);
+router.get('/category/:categoryId',loginJWTAthentication,authorize("Products", "view"), productController.getProductsByCategory);
 
 /**
  * @swagger
@@ -319,7 +319,7 @@ router.get('/category/:categoryId',loginJWTAthentication, productController.getP
  *                   storeId:
  *                     type: string
  */
-router.get('/store/:storeId',loginJWTAthentication, productController.getProductsByStore);
+router.get('/store/:storeId',loginJWTAthentication,authorize("Products", "view"), productController.getProductsByStore);
 
 /**
  * @swagger
@@ -352,7 +352,7 @@ router.get('/store/:storeId',loginJWTAthentication, productController.getProduct
  *       404:
  *         description: Product not found
  */
-router.patch('/:prodId/stock',loginJWTAthentication, productController.updateProductStock);
+router.patch('/:prodId/stock',loginJWTAthentication, authorize("Products", "edit"),productController.updateProductStock);
 
 
 
