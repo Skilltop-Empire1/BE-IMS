@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true,
     },
     userId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       references: { model: 'Users', key: 'userId' },
     },
     username: { 
@@ -24,13 +24,13 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: 'active',
     },
-    role: {
-      type: DataTypes.STRING(50),
+    role:  {
+      type: DataTypes.ENUM("Manager", "SuperAdmin", "Sales", "Employee", "Admin", "Finance"),
       allowNull: false,
       defaultValue: 'Employee',
     },
     storeId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       references: { model: 'Stores', key: 'storeId' },
     },
     addedDate: {
@@ -44,7 +44,7 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: [
         {
           label: 'Store',
-          view: true,
+          view: false,
           create: false,
           edit: false,
           approval: false,
@@ -52,8 +52,8 @@ module.exports = (sequelize, DataTypes) => {
         {
           label: 'Products',
           view: false,
-          create: true,
-          edit: true,
+          create: false,
+          edit: false,
           approval: false,
         },
         {
@@ -65,7 +65,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         {
           label: 'Users',
-          view: true,
+          view: false,
           create: false,
           edit: false,
           approval: false,
@@ -82,14 +82,14 @@ module.exports = (sequelize, DataTypes) => {
           view: false,
           create: false,
           edit: false,
-          approval: true,
+          approval: false,
         },
         {
           label: 'Accounts',
           view: false,
-          create: true,
+          create: false,
           edit: false,
-          approval: true,
+          approval: false,
         },
       ],
     },

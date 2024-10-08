@@ -1,6 +1,10 @@
 module.exports = (sequelize, DataTypes) => {
   const Product = sequelize.define('Product', {
-    prodId: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+    prodId: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
     name: { type: DataTypes.STRING, allowNull: false },
     price: { type: DataTypes.INTEGER },
     itemCode: { type: DataTypes.STRING },
@@ -13,11 +17,11 @@ module.exports = (sequelize, DataTypes) => {
     alertStatus:{type:DataTypes.INTEGER,allowNull:false,defaultValue: 60},
     quantity: { type: DataTypes.INTEGER, allowNull: false },
     categoryId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       references: { model: 'Categories', key: 'catId' },
     },
     storeId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       references: { model: 'Stores', key: 'storeId' },
     },
     storeAvailable: { type: DataTypes.STRING },

@@ -36,9 +36,9 @@ const loginJWTAthentication = async (req, res, next) => {
     //   req.user = user
     // }
 
-    const {id,email,role,permission} = verify
-    console.log("verify",verify,id,email,role,permission)
-    req.user = {userId:id,email,role,permission}
+    const {id,email,role,permission,userName} = verify
+    console.log("verify",verify,id,email,role,permission, userName)
+    req.user = {userId:id,email,role,permission,userName}
     next();  
   } catch (err) {
     console.log(err);
