@@ -159,7 +159,7 @@ const inviteStaff = async (req, res) => {
       // });
   try {
     const user = req.user;
-    console.log(user);
+  
 
     const { email, password, username } = req.body;
     if (!email || !password, !username) {
@@ -177,20 +177,14 @@ const inviteStaff = async (req, res) => {
       return res.status(400).json({ message: 'Email already exists as a user' });
     }
 
-    // // Check if the email already exists
-    // const existingUser = await User.findOne({ where: { email: email } });
-    // if (existingUser) {
-    //   return res.status(400).json({ message: 'Email already exists' });
-    // }
-
 
     // Hash the password before saving it
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     const admin = req.user.username
-    console.log(admin, "admin");
+  
     
-    const url = "https://skilltopims.com/";
+    const url = process.env.CLIENT_URL ;
     const newStaff = await Staff.create({
       userId:user.userId,
       username,
