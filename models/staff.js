@@ -44,21 +44,21 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: [
         {
           label: 'Store',
-          view: false,
+          view: true,
           create: false,
           edit: false,
           approval: false,
         },
         {
           label: 'Products',
-          view: false,
+          view: true,
           create: false,
           edit: false,
           approval: false,
         },
         {
           label: 'Category',
-          view: false,
+          view: true,
           create: true,
           edit: true,
           approval: false,
