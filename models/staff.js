@@ -57,6 +57,13 @@ module.exports = (sequelize, DataTypes) => {
           approval: false,
         },
         {
+          label: 'Category',
+          view: false,
+          create: true,
+          edit: true,
+          approval: false,
+        },
+        {
           label: 'Users',
           view: false,
           create: false,

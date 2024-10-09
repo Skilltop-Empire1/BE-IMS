@@ -53,7 +53,7 @@ const authorize = require("../middlewares/rolePermission");
  *       400:
  *         description: Invalid input
  */
-router.post('/',loginJWTAthentication,categoryController.createCategory);
+router.post('/',loginJWTAthentication,authorize('Category','create'),categoryController.createCategory);
 /**
  * @swagger
  * /filter:
@@ -98,7 +98,7 @@ router.post('/',loginJWTAthentication,categoryController.createCategory);
  *         description: Server error
  */
 
-router.get("/filter",loginJWTAthentication,categoryController.filterAllCategory);
+router.get("/filter",loginJWTAthentication,authorize('Category','view'),categoryController.filterAllCategory);
 
 /**
  * @swagger
@@ -123,7 +123,7 @@ router.get("/filter",loginJWTAthentication,categoryController.filterAllCategory)
  *                   storeId:
  *                     type: string
  */
-router.get('/',loginJWTAthentication,categoryController.getAllCategories);
+router.get('/',loginJWTAthentication,authorize('Category','view'),categoryController.getAllCategories);
 
 /**
  * @swagger
@@ -155,7 +155,7 @@ router.get('/',loginJWTAthentication,categoryController.getAllCategories);
  *       404:
  *         description: Category not found
  */
-router.get('/:catId', loginJWTAthentication,categoryController.getCategoryById);
+router.get('/:catId', loginJWTAthentication,authorize('Category','view'),categoryController.getCategoryById);
 
 /**
  * @swagger
@@ -191,7 +191,7 @@ router.get('/:catId', loginJWTAthentication,categoryController.getCategoryById);
  *       404:
  *         description: Category not found
  */
-router.put('/:catId',loginJWTAthentication, categoryController.updateCategory);
+router.put('/:catId',loginJWTAthentication,authorize('Category','edit'), categoryController.updateCategory);
 
 /**
  * @swagger
@@ -212,7 +212,7 @@ router.put('/:catId',loginJWTAthentication, categoryController.updateCategory);
  *       404:
  *         description: Category not found
  */
-router.delete('/:catId',loginJWTAthentication, categoryController.deleteCategory);
+router.delete('/:catId',loginJWTAthentication,authorize('Category','approval'), categoryController.deleteCategory);
 
 /**
  * @swagger
@@ -244,7 +244,7 @@ router.delete('/:catId',loginJWTAthentication, categoryController.deleteCategory
  *                   storeId:
  *                     type: string
  */
-router.get('/store/:storeId', loginJWTAthentication,categoryController.getCategoriesByStore);
+router.get('/store/:storeId', loginJWTAthentication,authorize('Category','view'),categoryController.getCategoriesByStore);
 
 /**
  * @swagger
@@ -280,7 +280,7 @@ router.get('/store/:storeId', loginJWTAthentication,categoryController.getCatego
  *       404:
  *         description: Category not found
  */
-router.get('/:catId/products',loginJWTAthentication, categoryController.getProductsByCategory);
+router.get('/:catId/products',loginJWTAthentication,authorize('Category','view'), categoryController.getProductsByCategory);
 
 
 

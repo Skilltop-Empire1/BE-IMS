@@ -38,6 +38,7 @@ const bcrypt = require('bcryptjs');
         status: staff.status,
         role: staff.role,
         store_name: staff.storeName,
+        permissions:staff.permissions
       }));
 
       return res.status(200).json({
@@ -137,10 +138,28 @@ const deleteStaff = async (req, res) => {
 
 
 const inviteStaff = async (req, res) => {
-  const user = req.user;
-  console.log(user, "userdetails");
-  
+
+      // const { email, password,username} = req.body;
+      // if (!email || !password) {
+      //   return res.status(400).json({ message: 'Email and password are required' });
+      // }
+      // const existingStaff = await Staff.findOne({ where: { email: email } });
+      // if (existingStaff) {
+      //   return res.status(400).json({ message: 'Email already exists' });
+      // }
+     
+      // const newStaff = await Staff.create({
+      //   username,
+      //   email,
+      //   password, 
+      //   addedDate: new Date(),
+      //   status: 'active',
+      //   role: 'Employee',
+      //   storeName: 'Store 1', 
+      // });
   try {
+    const user = req.user;
+    console.log(user);
 
     const { email, password, username } = req.body;
     if (!email || !password, !username) {
@@ -181,7 +200,7 @@ const inviteStaff = async (req, res) => {
       status: 'active',
       role: 'Employee',
       storeName: 'Store 1',
-    });
+  });
     let mailOption = {
       from: process.env.EMAIL_USER,
       to: newStaff.email,
