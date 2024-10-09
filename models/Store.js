@@ -1,7 +1,11 @@
 module.exports = (sequelize, DataTypes) => {
     const Store = sequelize.define('Store', {
-      storeId: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
-      userId: { type: DataTypes.INTEGER, references: { model: 'Users', key: 'userId' } },
+      storeId: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+      userId: { type: DataTypes.UUID, references: { model: 'Users', key: 'userId' } },
       storeName: { type: DataTypes.STRING, allowNull: false },
       location: { type: DataTypes.STRING, allowNull: false },
       description: { type: DataTypes.STRING },
