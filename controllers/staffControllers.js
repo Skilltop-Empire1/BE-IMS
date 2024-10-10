@@ -150,24 +150,6 @@ const deleteStaff = async (req, res) => {
 
 const inviteStaff = async (req, res) => {
 
-      // const { email, password,username} = req.body;
-      // if (!email || !password) {
-      //   return res.status(400).json({ message: 'Email and password are required' });
-      // }
-      // const existingStaff = await Staff.findOne({ where: { email: email } });
-      // if (existingStaff) {
-      //   return res.status(400).json({ message: 'Email already exists' });
-      // }
-     
-      // const newStaff = await Staff.create({
-      //   username,
-      //   email,
-      //   password, 
-      //   addedDate: new Date(),
-      //   status: 'active',
-      //   role: 'Employee',
-      //   storeName: 'Store 1', 
-      // });
   try {
 
     let { userId, role } = req.user; // Assuming req.user is the object
@@ -247,44 +229,6 @@ const inviteStaff = async (req, res) => {
 };
 
 
-
-// const togglePermission = async (req, res) => {
-//   try {
-//     const role =req.user.role
-//     if (role !=="superAdmin") {
-//       return res.status(401).json({ message: 'you are not allowed to access this this route' });
-//     }
-//     const { id: staffId } = req.params;
-//     const { label, permission } = req.body;
-
-//     // Find the staff member
-//     const staff = await Staff.findOne({ where: { staffId } });
-//     if (!staff) {
-//       return res.status(404).json({ message: 'Staff not found' });
-//     }
-
-//     // Update the permissions object
-//     const updatedPermissions = staff.permissions.map((perm) => {
-//       if (perm.label === label) {
-//         perm[permission] = !perm[permission];
-//       }
-//       return perm;
-//     });
-//     const permupdate = await Staff.update(
-//       { permissions: updatedPermissions },
-//       { where: { staffId } }
-//     );
-//     console.log("updatedPermissions",updatedPermissions );
-        
-//     return res.status(200).json({
-//       message: `Permission ${permission} for ${label} updated successfully`,
-//       permissions: updatedPermissions,
-//     });
-//   } catch (err) {
-//     console.error('Error updating permission:', err);
-//     return res.status(500).json({ message: 'Internal Server Error' });
-//   }
-// };
 const updatePermissions = async (req, res) => {
   try {
     
