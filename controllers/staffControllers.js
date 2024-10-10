@@ -1,4 +1,4 @@
-const {Staff, User}  = require('../models');
+const {Staff, User,Store}  = require('../models');
 const nodemailer = require('nodemailer')
 const veryfytoken = require('../middlewares/authMiddleware')
 const bcrypt = require('bcryptjs');

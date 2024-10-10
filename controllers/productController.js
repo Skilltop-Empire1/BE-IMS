@@ -1,4 +1,4 @@
-const { Product,Staff,Store } = require('../models'); // Import the Product model
+const { Product,Staff,Store,Category } = require('../models'); // Import the Product model
 const { Op } = require('sequelize');
 const path = require("path")
 const cloudinary = require("../config/cloudinary")
@@ -55,7 +55,7 @@ exports.getAllProducts = async (req, res) => {
     let { userId, role } = req.user; // Assuming req.user is the object
     userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
     const products = await Product.findAll({
-      include:[{model:Store,where:{userId}}]
+      include:[{model:Store,where:{userId}},{model:Category,atttributes:['name']}]
     });
     res.status(200).json(products);
   } catch (error) {
