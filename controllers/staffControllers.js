@@ -22,11 +22,12 @@ const bcrypt = require('bcryptjs');
   // Get paginated list of all staff
  const  getStaffList = async (req, res) => {
     try {
+      const userId = req.user.id;
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
       const offset = (page - 1) * limit;
 
-      const { count, rows } = await Staff.findAndCountAll({ limit, offset });
+      const { count, rows } = await Staff.findAndCountAll({ userId: userId, limit, offset });
 
       const totalPages = Math.ceil(count / limit);
 
@@ -166,7 +167,7 @@ const inviteStaff = async (req, res) => {
     const admin = req.user.username
   
     
-    const url = process.env.CLIENT_URL ;
+    const url = process.env.CLIENT2_URL ;
     const newStaff = await Staff.create({
       userId:user.userId,
       username,
