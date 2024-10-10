@@ -83,6 +83,16 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use('/photo', express.static(path.join(__dirname, 'photo')));
 
+app.get('/logo', (req, res) => {
+  res.sendFile(path.join(__dirname, 'photo', 'logo.PNG'), (err) => {
+    if (err) {
+      res.status(err.status).end();
+    } else {
+      console.log('Sent:', 'logo.PNG');
+    }
+  });
+});
+
 
 //for underfined routes
 app.use(notFoundError)
