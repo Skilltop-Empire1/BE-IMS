@@ -10,7 +10,8 @@ const { createNotifications } = require("./notificationController");
 // Create a new sales record
 const createSalesRecord = async (req, res) => {
     try {
-
+      let { userId, role } = req.user; 
+      userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
        const { productId, storeId, categoryId, quantity, paymentMethod } = req.body;
 
       // // Check if categoryId exists
@@ -33,7 +34,7 @@ const createSalesRecord = async (req, res) => {
 
 
         const newSalesRecord = await SalesRecord.create({
-          userId:req.user.userId,
+          userId,//:req.user.userId,
           productId,
           quantity,
           paymentMethod,
@@ -46,7 +47,7 @@ const createSalesRecord = async (req, res) => {
       } else {
         console.log("Socket.io instance retrieved:", io);
       }
-      const userId = req.user.userId
+      //const userId = req.user.userId
       await createNotifications(io,req.body.productId,req.body.quantity,userId,res)
       return res.send({
         status : 200,
@@ -63,7 +64,8 @@ const createSalesRecord = async (req, res) => {
 
   // Get all sales records
   const getSalesRecords = async (req, res) => {
-    const { userId } = req.user;
+    let { userId, role } = req.user; 
+    userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
     try {
     //  const salesRecords = await SalesRecord.findAll();
       const salesRecords = await SalesRecord.findAll({where: { userId: userId },
@@ -76,6 +78,7 @@ const createSalesRecord = async (req, res) => {
           {
             model: Store,
             attributes: ['storeName'], 
+            where:{userId}
           }
         ]
       })
@@ -103,11 +106,15 @@ const getSalesRecordById = async (req, res) => {
 
   const getSalesRecordByProductId = async (req, res) => {
     try {
+      let { userId, role } = req.user; 
+      userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
       const { productId } = req.params; // Extract productId from request parameters
       const salesRecords = await SalesRecord.findAll({
         where: {
           productId: productId, // Match productId from params
         },
+      },{
+        include:[{model:Store,where:{userId}}]
       });
   
       if (salesRecords.length === 0) {

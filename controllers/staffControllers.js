@@ -22,11 +22,15 @@ const bcrypt = require('bcryptjs');
   // Get paginated list of all staff
  const  getStaffList = async (req, res) => {
     try {
+      let { userId, role } = req.user; 
+    userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
       const offset = (page - 1) * limit;
 
-      const { count, rows } = await Staff.findAndCountAll({ limit, offset });
+      const { count, rows } = await Staff.findAndCountAll({ limit, offset },{
+        include:[{model:Store,where:{userId}}]
+      });
 
       const totalPages = Math.ceil(count / limit);
 
@@ -60,9 +64,12 @@ const bcrypt = require('bcryptjs');
 // Get staff by ID
 const getStaffById = async (req, res) => {
     try {
-       
+      let { userId, role } = req.user; // Assuming req.user is the object
+      userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
       const { id } = req.params;
-      const staff = await Staff.findByPk(id);
+      const staff = await Staff.findByPk(id,{
+        include:[{model:Store,where:{userId}}]
+      });
 
       if (!staff) {
         return res.status(404).json({ message: 'Staff not found' });
@@ -90,11 +97,15 @@ const getStaffById = async (req, res) => {
 // Update staff by ID
 const updateStaff = async (req, res) => {
     try {
+      let { userId, role } = req.user; // Assuming req.user is the object
+      userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
       const { id } = req.params;
       const updateData = req.body
       //const { status, role, permissions } = req.body;
 
-      const staff = await Staff.findByPk(id);
+      const staff = await Staff.findByPk(id,{
+        include:[{model:Store,where:{userId}}]
+      });
 
       if (!staff) {
         return res.status(404).json({ message: 'Staff not found' });
@@ -158,7 +169,10 @@ const inviteStaff = async (req, res) => {
       //   storeName: 'Store 1', 
       // });
   try {
-    const user = req.user;
+
+    let { userId, role } = req.user; // Assuming req.user is the object
+    userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
+    //const user = req.user;
   
 
     const { email, password, username } = req.body;
@@ -186,7 +200,7 @@ const inviteStaff = async (req, res) => {
     
     const url = process.env.CLIENT_URL ;
     const newStaff = await Staff.create({
-      userId:user.userId,
+      userId,//:user.userId
       username,
       email,
       password: hashedPassword,  // Save the hashed password
@@ -273,6 +287,7 @@ const inviteStaff = async (req, res) => {
 // };
 const updatePermissions = async (req, res) => {
   try {
+    
     // Check if user is superAdmin
     const role = req.user.role;
     if (role !== "superAdmin") {
