@@ -5,6 +5,7 @@ const cors = require("cors")
 const cron = require("node-cron")
 const axios = require("axios")
 const http = require("http")
+const path = require('path')
 
 const { initializeSocket } = require("./config/socket")
 const app = express()
@@ -42,6 +43,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cors(corsOptions));
 app.use(morgan("tiny"));
 
+app.use('/photo', express.static(path.join(__dirname, 'photo')))
+
 const userRoute = require("./routes/authRoutes");
 const profileRoute = require("./routes/profileRoutes");
 const productRoute = require("./routes/productRoutes");
@@ -77,6 +80,19 @@ cron.schedule('*/30 * * * *', async ()=> {
 
 // Serve the Swagger docs at /api-docs
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+app.use('/photo', express.static(path.join(__dirname, 'photo')));
+
+app.get('/logo', (req, res) => {
+  res.sendFile(path.join(__dirname, 'photo', 'logo.PNG'), (err) => {
+    if (err) {
+      res.status(err.status).end();
+    } else {
+      console.log('Sent:', 'logo.PNG');
+    }
+  });
+});
+
 
 //for underfined routes
 app.use(notFoundError)

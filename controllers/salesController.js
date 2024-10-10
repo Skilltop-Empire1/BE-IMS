@@ -1,4 +1,5 @@
-const {SalesRecord, Product, Store}  = require("../models/");
+const { ENUM } = require("sequelize");
+const {SalesRecord,Category, Product, Store}  = require("../models/");
 const {
   salesRecordSchema,
 } = require("../salesRecordValidation");
@@ -6,16 +7,39 @@ const {
 const { createNotifications } = require("./notificationController");
 
 
-  // Create a new sales record
-  const createSalesRecord = async (req, res) => {
+// Create a new sales record
+const createSalesRecord = async (req, res) => {
     try {
-  
-    //    // Check if categoryId exists
-    // const category = await db.Category.findByPk(categoryId);
-    // if (!category) {
-    //   return res.status(400).json({ message: 'Invalid categoryId' });
-    // }
-      const newSalesRecord = await SalesRecord.create(req.body);
+
+       const { productId, storeId, categoryId, quantity, paymentMethod } = req.body;
+
+      // // Check if categoryId exists
+      // const category = await Category.findOne({ where: { catId:categoryId } });
+      // if (!category) {
+      //   return res.status(400).json({ message: 'Invalid categoryId' });
+      // }
+
+      // // Check if productId exists
+      // const product = await Product.findByPk(productId);
+      // if (!product) {
+      //   return res.status(400).json({ message: 'Invalid productId' });
+      // }
+
+      // // Check if storeId exists
+      // const store = await Store.findByPk(storeId);
+      // if (!store) {
+      //   return res.status(400).json({ message: 'Invalid storeId' });
+      // }
+
+
+        const newSalesRecord = await SalesRecord.create({
+          userId:req.user.userId,
+          productId,
+          quantity,
+          paymentMethod,
+          categoryId,
+          storeId,
+      });
       const io = req.app.get("io");
       if (!io) {
         console.error("Socket.io instance not found");
@@ -24,18 +48,26 @@ const { createNotifications } = require("./notificationController");
       }
       const userId = req.user.userId
       await createNotifications(io,req.body.productId,req.body.quantity,userId,res)
-      return res.status(201).json(newSalesRecord);
+      return res.send({
+        status : 200,
+        suceessful:true,
+        data:newSalesRecord
+      });
     } catch (err) {
       console.error("Error creating sales record:", err);
-      return res.status(500).json({ message: "Internal Server Error" });
-    }
-  };
+      if (!res.headersSent) {
+        return res.status(500).json({ message: "Internal Server Error" });
+     // return res.status(500).json({ message: "Internal Server Error" });
+      }}
+};
 
   // Get all sales records
   const getSalesRecords = async (req, res) => {
+    const { userId } = req.user;
     try {
     //  const salesRecords = await SalesRecord.findAll();
-      const salesRecords = await SalesRecord.findAll({
+      const salesRecords = await SalesRecord.findAll({where: { userId: userId },
+
         include: [
           {
             model: Product,
@@ -43,7 +75,7 @@ const { createNotifications } = require("./notificationController");
           },
           {
             model: Store,
-            attributes: ['storeName'], // Include only the store name
+            attributes: ['storeName'], 
           }
         ]
       })

@@ -38,6 +38,7 @@ const bcrypt = require('bcryptjs');
         status: staff.status,
         role: staff.role,
         store_name: staff.storeName,
+        permissions:staff.permissions
       }));
 
       return res.status(200).json({
@@ -135,94 +136,39 @@ const deleteStaff = async (req, res) => {
     }
 };
 
-// Create staff (Invite staff)
-// const inviteStaff = async (req, res) => {
-//     try {
-//       const user = req.user 
-//       console.log(user);
-//       const { email, password,username} = req.body;
-//       if (!email || !password) {
-//         return res.status(400).json({ message: 'Email and password are required' });
-//       }
-//       const existingStaff = await Staff.findOne({ where: { email: email } });
-//       if (existingStaff) {
-//         return res.status(400).json({ message: 'Email already exists' });
-//       }
-//       const url = "https://skilltopims.com/";
-//       const newStaff = await Staff.create({
-//         username,
-//         email,
-//         password, 
-//         addedDate: new Date(),
-//         status: 'active',
-//         role: 'Employee',
-//         storeName: 'Store 1', 
-//       });
-      
 
-//       let mailOption = {
-//         from: process.env.EMAIL_USER,
-//         to: newStaff.email,
-//         subject: "You have been invited as a Staff Member",
-//         html: `<h2>Hi ${newStaff.username},</h2>
-//        <p>You have been invited by ${user.email} to join as a staff member.</p>
-//        <p>Please use the credentials below to log in by clicking on this <a href="${url}">link</a>:</p>
-//        <p>Email: ${newStaff.email}<br>
-//        Password: ${newStaff.password}</p>`
-//       }
-//       // sending email
-//       mailTransporter.sendMail(mailOption, function(error, info) {
-//         if (error) {
-//           console.log(error);
-//         } else {
-//           console.log('email is sent to the staff account');
-//         }
-//       })
-
-//       return res.status(201).json({
-//         success: true,
-//         message: 'Staff invited successfully, email is sent to the staff account',
-//         data: {
-//           id: newStaff.id,
-//           email: newStaff.email,
-//           status: newStaff.status,
-//           role: newStaff.role,
-//         },
-//       });
-//     } catch (err) {
-//       console.error('Error inviting staff:', err);
-//       return res.status(500).json({ message: 'Internal Server Error' });
-//     }
-//   };
 const inviteStaff = async (req, res) => {
+
   try {
     const user = req.user;
-    console.log(user);
+  
 
     const { email, password, username } = req.body;
     if (!email || !password, !username) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Check if the email already exists
+    // Check if the email already exists in staff
     const existingStaff = await Staff.findOne({ where: { email: email } });
     if (existingStaff) {
-      return res.status(400).json({ message: 'Email already exists' });
+      return res.status(400).json({ message: 'Email already exists as a staff' });
     }
 
-    // Check if the email already exists
-    const existingUser = await User.findOne({ where: { email: email } });
-    if (existingStaff) {
-      return res.status(400).json({ message: 'Email already exists' });
+    const userExistingStaff = await User.findOne({ where: { email: email } });
+    if (userExistingStaff) {
+      return res.status(400).json({ message: 'Email already exists as a user' });
     }
 
 
     // Hash the password before saving it
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    const url = "https://skilltopims.com/";
+    const admin = req.user.username
+  
+    
+    const url = process.env.CLIENT_URL ;
     const newStaff = await Staff.create({
+      userId:user.userId,
       username,
       email,
       password: hashedPassword,  // Save the hashed password
@@ -230,17 +176,16 @@ const inviteStaff = async (req, res) => {
       status: 'active',
       role: 'Employee',
       storeName: 'Store 1',
-    });
-
+  });
     let mailOption = {
       from: process.env.EMAIL_USER,
       to: newStaff.email,
       subject: "You have been invited as a Staff Member",
       html: `<h2>Hi ${newStaff.username},</h2>
-      <p>You have been invited by ${user.email} to join as a staff member.</p>
+      <p>You have been invited by ${admin} to join as a staff member.</p>
       <p>Please use the credentials below to log in by clicking on this <a href="${url}">link</a>:</p>
       <p>Email: ${newStaff.email}<br>
-      Password: ${password}</p>` // Send the plain password in the email
+      Password: ${password}</p>` 
     };
 
     // Sending the email
@@ -254,8 +199,9 @@ const inviteStaff = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: 'Staff invited successfully, email is sent to the staff account',
+      message: 'Staff invited successfully, email has been sent to the staff email account',
       data: {
+        user:req.user.username,
         id: newStaff.id,
         email: newStaff.email,
         status: newStaff.status,
@@ -267,7 +213,47 @@ const inviteStaff = async (req, res) => {
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
+
+const updatePermissions = async (req, res) => {
+  try {
+    // Check if user is superAdmin
+    const role = req.user.role;
+    if (role !== "superAdmin") {
+      return res.status(401).json({ message: 'You are not allowed to access this route' });
+    }
+
+    // Extract staffId from the request parameters
+    const { id: staffId } = req.params;
+
+    // Extract permissions from the request body
+    const { permissions } = req.body;
+
+    // Find the staff member
+    const staff = await Staff.findOne({ where: { staffId } });
+    if (!staff) {
+      return res.status(404).json({ message: 'Staff not found' });
+    }
+
+    // Update the permissions field with the new permissions array
+    staff.permissions = permissions;
+
+    // Save updated permissions
+    await staff.save();
+
+    console.log("updatedPermissions", permissions);
+
+    return res.status(200).json({
+      message: 'Permissions updated successfully',
+      permissions: staff.permissions,
+    });
+  } catch (err) {
+    console.error('Error updating permissions:', err);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
 // Export class instance
 module.exports = {
-    getStaffList, getStaffById, deleteStaff, updateStaff, inviteStaff
+    getStaffList, getStaffById, deleteStaff, updateStaff, inviteStaff, updatePermissions
 };

@@ -5,6 +5,10 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
+    userId: {
+      type: DataTypes.UUID,
+      references: { model: 'Users', key: 'userId' },
+    },
     username: { 
       type: DataTypes.STRING(100), 
       allowNull: true 
@@ -20,13 +24,13 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: 'active',
     },
-    role: {
-      type: DataTypes.STRING(50),
+    role:  {
+      type: DataTypes.ENUM("Manager", "SuperAdmin", "Sales", "Employee", "Admin", "Finance"),
       allowNull: false,
       defaultValue: 'Employee',
     },
     storeId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       references: { model: 'Stores', key: 'storeId' },
     },
     addedDate: {
@@ -37,10 +41,62 @@ module.exports = (sequelize, DataTypes) => {
     permissions: {
       type: DataTypes.JSON,
       allowNull: true,
+      defaultValue: [
+        {
+          label: 'Store',
+          view: true,
+          create: false,
+          edit: false,
+          approval: false,
+        },
+        {
+          label: 'Products',
+          view: true,
+          create: false,
+          edit: false,
+          approval: false,
+        },
+        {
+          label: 'Category',
+          view: true,
+          create: true,
+          edit: true,
+          approval: false,
+        },
+        {
+          label: 'Users',
+          view: false,
+          create: false,
+          edit: false,
+          approval: false,
+        },
+        {
+          label: 'Settings',
+          view: false,
+          create: false,
+          edit: false,
+          approval: false,
+        },
+        {
+          label: 'Sales Records',
+          view: false,
+          create: false,
+          edit: false,
+          approval: false,
+        },
+        {
+          label: 'Accounts',
+          view: false,
+          create: false,
+          edit: false,
+          approval: false,
+        },
+      ],
     },
   });
 
   Staff.associate = (models) => {
+    Staff.hasOne(models.Profile, { foreignKey: "staffId" });
     Staff.belongsTo(models.Store, { foreignKey: 'storeId' });
     Staff.belongsTo(models.User, { foreignKey: 'userId' });
   };

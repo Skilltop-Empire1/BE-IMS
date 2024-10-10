@@ -8,8 +8,8 @@ exports.createProductSchema = Joi.object({
   //prodPhoto: Joi.string().required(),
   alertStatus: Joi.number().required(),
   quantity: Joi.number().required(),
-  categoryId: Joi.number().required(),
-  storeId: Joi.number().required(),
+  categoryId: Joi.string().required(),
+  storeId: Joi.string().required(),
   storeAvailable: Joi.string().required(),
   prodDate: Joi.date().optional(),
 });
@@ -22,8 +22,8 @@ exports.updateProductSchema = Joi.object({
   //prodPhoto: Joi.string().optional(),
   alertStatus: Joi.number().optional(),
   quantity: Joi.number().optional(),
-  categoryId: Joi.number().optional(),
-  storeId: Joi.number().optional(),
+  categoryId: Joi.string().optional(),
+  storeId: Joi.string().optional(),
   storeAvailable: Joi.string().optional(),
   prodDate: Joi.date().optional(),
 });

@@ -1,6 +1,8 @@
 
 const express = require('express');
 const router = express.Router();
+const veryfytoken = require('../middlewares/authMiddleware')
+const authorize = require('../middlewares/rolePermission')
 const  {
     createSalesRecord,
     getSalesRecords, 
@@ -10,16 +12,16 @@ const  {
     getSalesRecordByProductId
   }  = require('../controllers/salesController');
 
-router.post('/create', createSalesRecord);
+router.post('/create', veryfytoken,authorize("Sales Records","create"), createSalesRecord);
 
-router.get('/get', getSalesRecords);
+router.get('/get', veryfytoken,authorize("Sales Records","view"), getSalesRecords);
 
-router.get('/product/:productId', getSalesRecordByProductId);
+router.get('/product/:productId',veryfytoken,authorize("Sales Records","view"), getSalesRecordByProductId);
 
-router.get('/get/:id', getSalesRecordById);
+router.get('/get/:id',veryfytoken,authorize("Sales Records","view"), getSalesRecordById);
 
-router.put('/update/:id',updateSalesRecord);
+router.put('/update/:id',veryfytoken,authorize("Sales Records","edit"), updateSalesRecord);
 
-router.delete('/delete/:id',deleteSalesRecord);
+router.delete('/delete/:id',veryfytoken,authorize("Sales Records","aproval"), deleteSalesRecord);
 
 module.exports = router;

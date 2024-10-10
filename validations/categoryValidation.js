@@ -1,7 +1,7 @@
 const Joi = require('joi');
 
 const createCategorySchema = Joi.object({
-  storeId: Joi.number().integer().required().messages({
+  storeId: Joi.string().required().messages({
     'number.base': 'Store ID must be a number',
     'any.required': 'Store ID is required'
   }),
@@ -12,7 +12,7 @@ const createCategorySchema = Joi.object({
 });
 
 const updateCategorySchema = Joi.object({
-  storeId: Joi.number().integer().optional().messages({
+  storeId: Joi.string().optional().messages({
     'number.base': 'Store ID must be a number'
   }),
   name: Joi.string().optional().messages({
