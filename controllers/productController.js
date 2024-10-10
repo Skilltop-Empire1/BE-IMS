@@ -264,3 +264,23 @@ exports.filterAllProducts = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+exports.skillTopImage = async (req, res) => {
+  try {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+          folder: "image",   
+          width: 300,    
+          crop: "scale"      
+      });
+      res.json({
+          message: "Image uploaded successfully",
+          imageUrl: result.secure_url 
+      });
+      console.log(imageUrl)
+  } catch (error) {
+      res.status(500).json({
+          message: "Image upload failed",
+          error: error.message
+      });
+  }
+};
