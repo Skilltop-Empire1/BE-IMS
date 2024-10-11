@@ -22,13 +22,13 @@ const bcrypt = require('bcryptjs');
   // Get paginated list of all staff
  const  getStaffList = async (req, res) => {
     try {
-      let { userId, role } = req.user; 
-    userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
+      let { userId, role, Store} = req.user; 
+    userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { userId: userId } })).userId;
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
       const offset = (page - 1) * limit;
 
-      const { count, rows } = await Staff.findAndCountAll({ limit, offset },{
+      const { count, rows } = await Staff.findAndCountAll({ where: { userId: userId }, limit, offset },{
         include:[{model:Store,where:{userId}}]
       });
 
@@ -180,16 +180,13 @@ const inviteStaff = async (req, res) => {
     const admin = req.user.username
   
     
-    const url = process.env.CLIENT_URL ;
+    const url = process.env.CLIENT2_URL ;
     const newStaff = await Staff.create({
       userId,//:user.userId
       username,
       email,
       password: hashedPassword,  // Save the hashed password
       addedDate: new Date(),
-      status: 'active',
-      role: 'Employee',
-      storeName: 'Store 1',
   });
     let mailOption = {
       from: process.env.EMAIL_USER,

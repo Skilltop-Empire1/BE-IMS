@@ -10,31 +10,23 @@ const { createNotifications } = require("./notificationController");
 // Create a new sales record
 const createSalesRecord = async (req, res) => {
     try {
-      let { userId, role } = req.user; 
-      userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
+
        const { productId, storeId, categoryId, quantity, paymentMethod } = req.body;
+       const product = await Product.findByPk(productId);
+       
+    if (!product) {
+      // Stop the function if product is not found
+      return res.status(404).json({ message: "Product not found" });
+    }
 
-      // // Check if categoryId exists
-      // const category = await Category.findOne({ where: { catId:categoryId } });
-      // if (!category) {
-      //   return res.status(400).json({ message: 'Invalid categoryId' });
-      // }
-
-      // // Check if productId exists
-      // const product = await Product.findByPk(productId);
-      // if (!product) {
-      //   return res.status(400).json({ message: 'Invalid productId' });
-      // }
-
-      // // Check if storeId exists
-      // const store = await Store.findByPk(storeId);
-      // if (!store) {
-      //   return res.status(400).json({ message: 'Invalid storeId' });
-      // }
-
+    // Ensure there is enough stock
+    if (product.quantity < quantity) {
+      // Stop the function if insufficient stock
+      return res.status(401).json({ msg: "Insufficient stock" });
+    }
 
         const newSalesRecord = await SalesRecord.create({
-          userId,//:req.user.userId,
+          userId:req.user.userId,
           productId,
           quantity,
           paymentMethod,
@@ -47,7 +39,7 @@ const createSalesRecord = async (req, res) => {
       } else {
         console.log("Socket.io instance retrieved:", io);
       }
-      //const userId = req.user.userId
+      const userId = req.user.userId
       await createNotifications(io,req.body.productId,req.body.quantity,userId,res)
       return res.send({
         status : 200,
@@ -73,12 +65,11 @@ const createSalesRecord = async (req, res) => {
         include: [
           {
             model: Product,
-            attributes: ['name','price','prodPhoto'], // Include only the product name
+            attributes: ['name','price','prodPhoto'], 
           },
           {
             model: Store,
             attributes: ['storeName'], 
-            where:{userId}
           }
         ]
       })
@@ -106,15 +97,11 @@ const getSalesRecordById = async (req, res) => {
 
   const getSalesRecordByProductId = async (req, res) => {
     try {
-      let { userId, role } = req.user; 
-      userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
       const { productId } = req.params; // Extract productId from request parameters
       const salesRecords = await SalesRecord.findAll({
         where: {
           productId: productId, // Match productId from params
         },
-      },{
-        include:[{model:Store,where:{userId}}]
       });
   
       if (salesRecords.length === 0) {
