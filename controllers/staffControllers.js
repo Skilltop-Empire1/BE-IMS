@@ -1,4 +1,4 @@
-const {Staff, User}  = require('../models');
+const {Staff, User, Store}  = require('../models');
 const nodemailer = require('nodemailer')
 const veryfytoken = require('../middlewares/authMiddleware')
 const bcrypt = require('bcryptjs');
@@ -95,40 +95,40 @@ const getStaffById = async (req, res) => {
 };
 
 // Update staff by ID
+
 const updateStaff = async (req, res) => {
-    try {
-      let { userId, role } = req.user; // Assuming req.user is the object
-      userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
-      const { id } = req.params;
-      const updateData = req.body
-      //const { status, role, permissions } = req.body;
+  try {
+    let { userId, role } = req.user; 
+    userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
 
-      const staff = await Staff.findByPk(id,{
-        include:[{model:Store,where:{userId}}]
-      });
+    const { id } = req.params; 
+    const updateData = req.body;
 
-      if (!staff) {
-        return res.status(404).json({ message: 'Staff not found' });
-      }
+    const staff = await Staff.findByPk(id, {
+     // include: [{ model: Store, where: { userId } }] 
+    });
 
-      await Staff.update(updateData , { where: { staffId: id } });
-
-      const updatedStaff = await Staff.findByPk(id);
-      return res.status(200).json({
-        id: updatedStaff.id,
-       // firstName: updatedStaff.username.split(' ')[0],
-       // lastName: updatedStaff.username.split(' ')[1],
-        email: updatedStaff.email,
-          role: updatedStaff.role,
-          name: updatedStaff.name,
-          permissions: updatedStaff.permissions,
-      
-      });
-    } catch (err) {
-      console.error('Error updating staff:', err);
-      return res.status(500).json({ message: 'Internal Server Error' });
+    if (!staff) {
+      return res.status(404).json({ message: 'Staff not found' });
     }
-  };
+
+    await Staff.update(updateData, { where: { staffId: id } });
+
+    const updatedStaff = await Staff.findByPk(id);
+
+    return res.status(200).json({
+      id: updatedStaff.id,
+      email: updatedStaff.email,
+      role: updatedStaff.role,
+      name: updatedStaff.name,
+      permissions: updatedStaff.permissions,
+    });
+  } catch (err) {
+    console.error('Error updating staff:', err);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
 
 // Delete staff by ID
 const deleteStaff = async (req, res) => {

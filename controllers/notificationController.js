@@ -92,6 +92,13 @@ const createNotifications = async (io, productId, quantity, userId, res) => {
         console.error(`User ${userId} is not connected.`);
       }
     }
+        // Create a notification in the database
+        await Notification.create({
+          message: `The quantity of ${product.name} is low (Current: ${product.quantity})`,
+          type: 'product',
+          userId: userId,
+        });
+    
   } catch (err) {
     console.error("Error in creating notification:", err);
     return res.status(500).json({ message: "Internal Server Error" });
