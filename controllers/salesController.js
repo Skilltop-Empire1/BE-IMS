@@ -12,25 +12,18 @@ const createSalesRecord = async (req, res) => {
     try {
 
        const { productId, storeId, categoryId, quantity, paymentMethod } = req.body;
+       const product = await Product.findByPk(productId);
+       
+    if (!product) {
+      // Stop the function if product is not found
+      return res.status(404).json({ message: "Product not found" });
+    }
 
-      // // Check if categoryId exists
-      // const category = await Category.findOne({ where: { catId:categoryId } });
-      // if (!category) {
-      //   return res.status(400).json({ message: 'Invalid categoryId' });
-      // }
-
-      // // Check if productId exists
-      // const product = await Product.findByPk(productId);
-      // if (!product) {
-      //   return res.status(400).json({ message: 'Invalid productId' });
-      // }
-
-      // // Check if storeId exists
-      // const store = await Store.findByPk(storeId);
-      // if (!store) {
-      //   return res.status(400).json({ message: 'Invalid storeId' });
-      // }
-
+    // Ensure there is enough stock
+    if (product.quantity < quantity) {
+      // Stop the function if insufficient stock
+      return res.status(401).json({ msg: "Insufficient stock" });
+    }
 
         const newSalesRecord = await SalesRecord.create({
           userId:req.user.userId,
@@ -63,7 +56,8 @@ const createSalesRecord = async (req, res) => {
 
   // Get all sales records
   const getSalesRecords = async (req, res) => {
-    const { userId } = req.user;
+    let { userId, role } = req.user; 
+    userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
     try {
     //  const salesRecords = await SalesRecord.findAll();
       const salesRecords = await SalesRecord.findAll({where: { userId: userId },
@@ -71,7 +65,7 @@ const createSalesRecord = async (req, res) => {
         include: [
           {
             model: Product,
-            attributes: ['name','price','prodPhoto'], // Include only the product name
+            attributes: ['name','price','prodPhoto'], 
           },
           {
             model: Store,

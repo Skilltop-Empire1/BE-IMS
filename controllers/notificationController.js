@@ -58,19 +58,25 @@ const userSocketMap = getUserSocketMap();
 const createNotifications = async (io, productId, quantity, userId, res) => {
   try {
     const socketId = userSocketMap[userId];
-    console.log("userSocketId",socketId)
+    console.log("userSocketId", socketId);
+
     // Fetch the product details
     const product = await Product.findByPk(productId);
     if (!product) {
+      // Stop the function if product is not found
       return res.status(404).json({ message: "Product not found" });
     }
+
     // Ensure there is enough stock
     if (product.quantity < quantity) {
+      // Stop the function if insufficient stock
       return res.status(401).json({ msg: "Insufficient stock" });
     }
+
     // Update product quantity
     product.quantity -= quantity;
     await product.save();
+
     // Send product alert if quantity is below alert threshold
     if (product.quantity <= product.alertStatus) {
       console.log("socketId:", socketId);
@@ -79,26 +85,16 @@ const createNotifications = async (io, productId, quantity, userId, res) => {
         const alertMessage = `The quantity of ${product.name} is low (Current: ${product.quantity})`;
         io.to(socketId).emit('productAlert', {
           message: alertMessage,
-          productId: product.prodId
+          productId: product.prodId,
         });
         console.log("Emitting message:", alertMessage);
       } else {
         console.error(`User ${userId} is not connected.`);
       }
     }
-    // Create a notification in the database
-    await Notification.create({
-      message: `The quantity of ${product.name} is low (Current: ${product.quantity})`,
-      type: 'product',
-      userId: userId,
-    });
-
-  } catch (error) {
-    console.error("Notification Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to create notifications",
-    });
+  } catch (err) {
+    console.error("Error in creating notification:", err);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
