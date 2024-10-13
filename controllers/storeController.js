@@ -46,13 +46,13 @@ const upload = multer({
             const {userId} = req.user;//Extract UserId from Jwt payload
             console.log("userId",userId)
             // Check if store name or location already exists
-            if (await Store.findOne({ where: { storeName } })) {
+            if (await Store.findOne({ where: { storeName} })) {
                 return res.status(400).json({ error: 'Store Name already exists' });
             }
 
-            if (await Store.findOne({ where: { location } })) {
-                return res.status(400).json({ error: 'A Store is already in this location' });
-            }
+            // if (await Store.findOne({ where: { location } })) {
+            //     return res.status(400).json({ error: 'A Store is already in this location' });
+            // }
 
             // Validate phone number format
             if (!validatePhoneNumber(storeContact)) {
