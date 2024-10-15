@@ -9,77 +9,95 @@ const { createNotifications } = require("./notificationController");
 
 // Create a new sales record
 const createSalesRecord = async (req, res) => {
-    try {
+  try {
+    const { productId, storeId, categoryId, quantity, paymentMethod } = req.body;
 
-       const { productId, storeId, categoryId, quantity, paymentMethod } = req.body;
-       const product = await Product.findByPk(productId);
-       
+    // Step 1: Find the product by its ID.
+    const product = await Product.findByPk(productId);
+
+    // Step 2: If the product doesn't exist, return a 404 error.
     if (!product) {
-      // Stop the function if product is not found
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // Ensure there is enough stock
+    // Step 3: Check if there's enough stock for the requested quantity.
     if (product.quantity < quantity) {
-      // Stop the function if insufficient stock
       return res.status(401).json({ msg: "Insufficient stock" });
     }
 
-        const newSalesRecord = await SalesRecord.create({
-          userId:req.user.userId,
-          productId,
-          quantity,
-          paymentMethod,
-          categoryId,
-          storeId,
-      });
-      const io = req.app.get("io");
-      if (!io) {
-        console.error("Socket.io instance not found");
-      } else {
-        console.log("Socket.io instance retrieved:", io);
-      }
-      const userId = req.user.userId
-      await createNotifications(io,req.body.productId,req.body.quantity,userId,res)
-      return res.send({
-        status : 200,
-        suceessful:true,
-        data:newSalesRecord
-      });
-    } catch (err) {
-      console.error("Error creating sales record:", err);
-      if (!res.headersSent) {
-        return res.status(500).json({ message: "Internal Server Error" });
-     // return res.status(500).json({ message: "Internal Server Error" });
-      }}
+    // Step 4: Create the sales record with the current price of the product.
+    const newSalesRecord = await SalesRecord.create({
+      userId: req.user.userId,
+      productId,
+      quantity,
+      paymentMethod,
+      categoryId,
+      storeId,
+      productPrice: product.price,
+      saleDate: new Date(),
+    });
+
+    const io = req.app.get("io");
+    if (!io) {
+      console.error("Socket.io instance not found");
+    } else {
+      console.log("Socket.io instance retrieved:", io);
+    }
+
+    // Step 6: Create a notification for the sale.
+    const userId = req.user.userId;
+    await createNotifications(io, productId, quantity, userId, res);
+
+    // Step 7: Send the response back with the newly created sales record.
+    return res.status(200).send({
+      successful: true,
+      data: newSalesRecord,
+    });
+
+  } catch (err) {
+    // Step 8: Handle any errors and return a 500 status if needed.
+    console.error("Error creating sales record:", err);
+    if (!res.headersSent) {
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  }
 };
+
 
   // Get all sales records
   const getSalesRecords = async (req, res) => {
     let { userId, role } = req.user; 
     userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
+  
     try {
-    //  const salesRecords = await SalesRecord.findAll();
-      const salesRecords = await SalesRecord.findAll({where: { userId: userId },
-
+      // Fetch sales records with relevant details
+      const salesRecords = await SalesRecord.findAll({
+        where: { userId: userId },
         include: [
           {
             model: Product,
-            attributes: ['name','price','prodPhoto'], 
+            attributes: ['name', 'prodPhoto'], 
           },
           {
             model: Store,
-            attributes: ['storeName'], 
-          }
-        ]
-      })
+            attributes: ['storeName'],
+          },
+        ],
+        attributes: [
+          'quantity',
+          'paymentMethod',
+          'productPrice', // Include productPrice from SalesRecord
+          'soldDate', // Include sale date
+        ],
+      });
+  
       return res.status(200).json(salesRecords);
     } catch (err) {
       console.error("Error fetching sales records:", err);
       return res.status(500).json({ message: "Internal Server Error" });
     }
   };
-
+  
   // Get a single sales record by ID
 const getSalesRecordById = async (req, res) => {
     try {
