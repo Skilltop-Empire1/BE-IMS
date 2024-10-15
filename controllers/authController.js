@@ -68,8 +68,9 @@ class UserObject {
         },
         to: user.email,
         subject: "IMS Reset link",
-        text: "Click on the link to proceed with the password reset",
-        html: `<a href= ${process.env.CLIENT2_URL}/passwordConfirmation >Click here to reset your password: ${randomText}</a>,`, // html body
+        text: `You have made a request to change a password. Kindly Click on the link to proceed with the password reset`,
+        html: `<p>You have made a request to change a password. Kindly Click on the link to proceed with the password reset</p>
+          <a href= ${process.env.CLIENT2_URL}/passwordConfirmation > Click here to reset your password: ${randomText}</a>,` // html body
       };
 
       res.json({
