@@ -84,6 +84,10 @@ const createSalesRecord = async (req, res) => {
           },
         ],
         attributes: [
+          'saleId',
+          'productId',
+          'storeId',
+          'categoryId',
           'quantity',
           'paymentMethod',
           'productPrice', // Include productPrice from SalesRecord
@@ -187,3 +191,7 @@ module.exports = {
   deleteSalesRecord,
   getSalesRecordByProductId
 };
+
+
+
+
