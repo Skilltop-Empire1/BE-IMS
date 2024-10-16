@@ -68,8 +68,16 @@ class UserObject {
         },
         to: user.email,
         subject: "IMS Reset link",
-        text: "Click on the link to proceed with the password reset",
-        html: `<a href= ${process.env.CLIENT2_URL}/passwordConfirmation >Click here to reset your password: ${randomText}</a>,`, // html body
+        text: `You have made a request to change a password. Kindly Click on the link to proceed with the password reset`,
+        html:` <div style="font-family: Arial, sans-serif; color: #333;">
+          <h2>Password Reset Request</h2>
+          <p>Hello,</p>
+          <p>We received a request to reset your password for your IMS account. If you made this request, please click the button below to reset your password:</p>
+          <a href="${process.env.CLIENT2_URL}/passwordConfirmation?token=${randomText}" style="display: inline-block; padding: 10px 20px; background-color: #007BFF; color: #fff; text-decoration: none; border-radius: 5px; font-weight: bold;">Reset Password</a>
+          <p>If you did not request a password reset, please ignore this email. Your password will remain unchanged.</p>
+          <p>Best regards,<br/>IMS Support Team</p>
+          </div>`,
+       
       };
 
       res.json({
