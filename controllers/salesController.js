@@ -1,5 +1,5 @@
 const { ENUM } = require("sequelize");
-const {SalesRecord,Category, Product, Store}  = require("../models/");
+const {SalesRecord,Category, Staff, Product, Store}  = require("../models/");
 const {
   salesRecordSchema,
 } = require("../salesRecordValidation");
