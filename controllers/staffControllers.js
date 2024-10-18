@@ -152,7 +152,12 @@ const inviteStaff = async (req, res) => {
 
   try {
 
-    let { userId, role } = req.user; // Assuming req.user is the object
+    const role = req.user.role;
+    if (role !== "superAdmin") {
+      return res.status(401).json({ message: 'You are not allowed to access this route' });
+    }
+
+    let {userId} = req.user; // Assuming req.user is the object
     userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
     //const user = req.user;
   
