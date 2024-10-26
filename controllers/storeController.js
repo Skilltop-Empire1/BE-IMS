@@ -325,8 +325,8 @@ exports.getStoreOverview = async (req, res) => {
 
 // Delete store by ID (THIS FNCTION IS NOT USED IN THE CURRENT PROJ BUT IS HERE JUST IN CASE)
 exports.deleteStoreById = async (req, res) => {
-    const storeId = req.params.storeId; // Extract store ID from request parameters
-    
+    const storeId = req.params.storeId;
+
     try {
         const store = await Store.findByPk(storeId);
 
@@ -334,14 +334,39 @@ exports.deleteStoreById = async (req, res) => {
             return res.status(404).json({ error: 'Store not found' });
         }
 
-        // Delete the store from the database
+        // First, delete all products associated with this store
+        await Product.destroy({ where: { storeId } });
+
+         // Secondly, delete all categories associated with this store
+         await Category.destroy({ where: { storeId } });
+
+        // Now, delete the store
         await store.destroy();
-        res.status(200).json({ message: 'Store deleted successfully' });
+        
+        res.status(200).json({ message: 'Store and related products and categories deleted successfully' });
 
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
+// exports.deleteStoreById = async (req, res) => {
+//     const storeId = req.params.storeId; // Extract store ID from request parameters
+    
+//     try {
+//         const store = await Store.findByPk(storeId);
+
+//         if (!store) {
+//             return res.status(404).json({ error: 'Store not found' });
+//         }
+
+//         // Delete the store from the database
+//         await store.destroy();
+//         res.status(200).json({ message: 'Store deleted successfully' });
+
+//     } catch (error) {
+//         res.status(500).json({ error: error.message });
+//     }
+// };
 
 
 
