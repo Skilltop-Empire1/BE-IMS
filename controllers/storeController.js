@@ -321,12 +321,10 @@ exports.getStoreOverview = async (req, res) => {
     }
 };
 
-
-
-// Delete store by ID (THIS FNCTION IS NOT USED IN THE CURRENT PROJ BUT IS HERE JUST IN CASE)
+// DELETE STORE BY ID 
 exports.deleteStoreById = async (req, res) => {
-    const storeId = req.params.storeId; // Extract store ID from request parameters
-    
+    const storeId = req.params.storeId;
+
     try {
         const store = await Store.findByPk(storeId);
 
@@ -334,9 +332,16 @@ exports.deleteStoreById = async (req, res) => {
             return res.status(404).json({ error: 'Store not found' });
         }
 
-        // Delete the store from the database
+        // First, delete all products associated with this store
+        await Product.destroy({ where: { storeId } });
+
+         // Secondly, delete all categories associated with this store
+         await Category.destroy({ where: { storeId } });
+
+        // Now, delete the store
         await store.destroy();
-        res.status(200).json({ message: 'Store deleted successfully' });
+        
+        res.status(200).json({ message: 'Store and related products and categories deleted successfully' });
 
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -345,9 +350,9 @@ exports.deleteStoreById = async (req, res) => {
 
 
 
-// Edit store by ID (THIS FNCTION IS NOT USED IN THE CURRENT PROJ BUT IS HERE JUST IN CASE)
+//EDIT STORE BY ID
 exports.editStoreById = async (req, res) => {
-    const storeId = req.params.storeId; // Extract store ID from request parameters
+    const storeId = req.params.storeId;
 
     upload(req, res, async (err) => {
         if (err instanceof multer.MulterError) {
@@ -371,25 +376,28 @@ exports.editStoreById = async (req, res) => {
                 return res.status(400).json({ error: 'Invalid phone number format' });
             }
 
-            // If image was uploaded, save its file path
-            let storePhoto = store.storePhoto; // Keep existing photo by default
+            // If an image was uploaded, upload to Cloudinary and update the storePhoto URL
+            let storePhoto = store.storePhoto; // Default to the existing photo
             if (req.file) {
-                storePhoto = req.file.path; // Update the file path if a new image was uploaded
+                const result = await new Promise((resolve, reject) => {
+                    cloudinary.uploader.upload_stream({ public_id: uuidv4() }, (error, result) => {
+                        if (error) return reject(error);
+                        resolve(result);
+                    }).end(req.file.buffer);
+                });
+                storePhoto = result.secure_url; // Update with the Cloudinary URL
             }
-
             // Update the store with new data
             await store.update({
-                storeName: storeName || store.storeName,  // Keep original values if not provided
+                storeName: storeName || store.storeName,
                 location: location || store.location,
                 storeContact: storeContact || store.storeContact,
-                storePhoto,  // Updated or existing image path
+                storePhoto,  // Updated Cloudinary URL or existing path
                 description: description || store.description,
                 noOfStaff: noOfStaff || store.noOfStaff,
                 storeManager: storeManager || store.storeManager
             });
-
             res.status(200).json(store);
-
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
