@@ -125,60 +125,63 @@ class UserObject {
     }
   };
 
-  //********* signup method ************** */
-
   signup = async (req, res) => {
     const { userName, email, password } = req.body;
 
-    //********validation ***********/
-    const { error } = userschema.userValidation.validate(req.body);
-    if (error) {
-      return res.status(404).json(error.details[0].message);
+    // **Block new users from signing up**
+    const allowNewUsers = false; // Change to 'true' to allow signups again
+    if (!allowNewUsers) {
+        return res.status(403).json({ msg: "New users not allowed" });
     }
 
-    //*********check if user exist ********/
+    // ********validation ***********/
+    const { error } = userschema.userValidation.validate(req.body);
+    if (error) {
+        return res.status(404).json(error.details[0].message);
+    }
+
+    // *********check if user exist ********/
     const userExist = await userModel.User.findOne({
-      where: {
-        [Op.or]: [{ userName: userName }, { email: email }],
-      },
+        where: {
+            [Op.or]: [{ userName: userName }, { email: email }],
+        },
     });
 
     const staffExist = await userModel.Staff.findOne({
-      where: {
-        [Op.or]: [{ username: userName }, { email: email }],
-      },
+        where: {
+            [Op.or]: [{ username: userName }, { email: email }],
+        },
     });
 
-    /******hash password***** */
+    // ******hash password***** /
     const hashedPassword = await bcrypt.hash(password, 10);
     try {
-      if (userExist||staffExist) {
-        return res
-          .status(404)
-          .json({ msg: "A User with these details already Exist" });
-      }
+        if (userExist || staffExist) {
+            return res
+                .status(404)
+                .json({ msg: "A User with these details already exists" });
+        }
     } catch (error) {
-      throw error;
+        throw error;
     }
 
-    //*********create user if none exist ****** */
+    // *********create user if none exist ****** /
     const createUser = await userModel.User.create({
-      userName,
-      email,
-      password: hashedPassword,
+        userName,
+        email,
+        password: hashedPassword,
     });
 
     try {
-      if (createUser) {
-        console.log(createUser);
-        res.status(201).json({ msg: "User created successfully" });
-        return createUser;
-      }
+        if (createUser) {
+            console.log(createUser);
+            res.status(201).json({ msg: "User created successfully" });
+            return createUser;
+        }
     } catch (error) {
-      throw error;
+        throw error;
     }
-  };
-
+};
 
 
   //************user signin  ***********/
