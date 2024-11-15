@@ -6,13 +6,13 @@ const expenditureValidationSchema = Joi.object({
   category: Joi.string().required(),
   paymentMethod: Joi.string().optional().allow(''), // Only for OPEX, can be empty
   description: Joi.string().required(),
-  annualDepreciation: Joi.number().precision(2).optional().allow(null), // Only for CAPEX
+  annualDepreciation: Joi.number().precision(2).optional().allow(''), // Only for CAPEX
   vendor: Joi.string().optional().allow(''),
   amount: Joi.number().positive().required(),
   notes: Joi.string().optional().allow(''),
   dateOfExpense: Joi.date().required(),
   //uploadReceipt: Joi.string().uri().optional().allow(''), // Assuming the receipt is a URL
-  expectedLifespan: Joi.number().integer().optional().allow(null), // Only for CAPEX
+  expectedLifespan: Joi.number().integer().optional().allow(''), // Only for CAPEX
 });
 
 module.exports = expenditureValidationSchema;

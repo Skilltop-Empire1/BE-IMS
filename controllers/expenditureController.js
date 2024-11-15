@@ -1,6 +1,6 @@
 const { Expenditure,Staff,Store } = require('../models');
 const cloudinary = require("../config/cloudinary")
-const {expenditureValidationSchema} = require("../validations/expenditureValidation");
+const expenditureValidationSchema = require("../validations/expenditureValidation");
 
 
 exports.createExpenditure = async (req, res) => {
@@ -75,9 +75,18 @@ exports.createExpenditure = async (req, res) => {
 
 exports.getAllExpenditures = async (req, res) => {
     try {
+      const {opex,capex} = req.query
+      const where = {}
+      if(opex){
+        where.type = 'OPEX'
+      }
+      if(capex){
+        where.type = 'CAPEX'
+      }
       let { userId, role } = req.user; // Assuming req.user is the object
       userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
       const expenditures = await Expenditure.findAll({
+        where,
         include:[{model:Store,where:{userId}}]
       });
       res.status(200).json(expenditures);
@@ -124,12 +133,16 @@ exports.getAllExpenditures = async (req, res) => {
         return res.status(404).json({ error: 'Expenditure not found' });
       }
       //update recepit if it exists
-      const url = expenditure.uploadReceipt
+      let url = expenditure.uploadReceipt
         if(req.file){
+            if (expenditure.uploadReceipt) {
+                const publicId = expenditure.uploadReceipt.split('/').pop().split('.')[0]; // Extract publicId from URL
+                await cloudinary.uploader.destroy(`receipt/${publicId}`);
+            }
             const result = await cloudinary.uploader.upload(req.file.path,{
                 folder:"receipt",
                 width:300,
-                size:"scale"
+                crop:"scale"
             })
             url = result.url
          }
