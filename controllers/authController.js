@@ -68,8 +68,16 @@ class UserObject {
         },
         to: user.email,
         subject: "IMS Reset link",
-        text: "Click on the link to proceed with the password reset",
-        html: `<a href= ${process.env.CLIENT2_URL}/passwordConfirmation >Click here to reset your password: ${randomText}</a>,`, // html body
+        text: `You have made a request to change a password. Kindly Click on the link to proceed with the password reset`,
+        html:` <div style="font-family: Arial, sans-serif; color: #333;">
+          <h2>Password Reset Request</h2>
+          <p>Hello,</p>
+          <p>We received a request to reset your password for your IMS account. If you made this request, please click the button below to reset your password:</p>
+          <a href="${process.env.CLIENT2_URL}/passwordConfirmation?token=${randomText}" style="display: inline-block; padding: 10px 20px; background-color: #007BFF; color: #fff; text-decoration: none; border-radius: 5px; font-weight: bold;">Reset Password</a>
+          <p>If you did not request a password reset, please ignore this email. Your password will remain unchanged.</p>
+          <p>Best regards,<br/>IMS Support Team</p>
+          </div>`,
+       
       };
 
       res.json({
@@ -117,60 +125,63 @@ class UserObject {
     }
   };
 
-  //********* signup method ************** */
-
   signup = async (req, res) => {
     const { userName, email, password } = req.body;
 
-    //********validation ***********/
-    const { error } = userschema.userValidation.validate(req.body);
-    if (error) {
-      return res.status(404).json(error.details[0].message);
+    // **Block new users from signing up**
+    const allowNewUsers = false; 
+    if (!allowNewUsers) {
+        return res.status(403).json({ msg: "New users not allowed, Please contact support" });
     }
 
-    //*********check if user exist ********/
+    // ********validation ***********/
+    const { error } = userschema.userValidation.validate(req.body);
+    if (error) {
+        return res.status(404).json(error.details[0].message);
+    }
+
+    // *********check if user exist ********/
     const userExist = await userModel.User.findOne({
-      where: {
-        [Op.or]: [{ userName: userName }, { email: email }],
-      },
+        where: {
+            [Op.or]: [{ userName: userName }, { email: email }],
+        },
     });
 
     const staffExist = await userModel.Staff.findOne({
-      where: {
-        [Op.or]: [{ username: userName }, { email: email }],
-      },
+        where: {
+            [Op.or]: [{ username: userName }, { email: email }],
+        },
     });
 
-    /******hash password***** */
+    // ******hash password***** /
     const hashedPassword = await bcrypt.hash(password, 10);
     try {
-      if (userExist||staffExist) {
-        return res
-          .status(404)
-          .json({ msg: "A User with these details already Exist" });
-      }
+        if (userExist || staffExist) {
+            return res
+                .status(404)
+                .json({ msg: "A User with these details already exists" });
+        }
     } catch (error) {
-      throw error;
+        throw error;
     }
 
-    //*********create user if none exist ****** */
+    // *********create user if none exist ****** /
     const createUser = await userModel.User.create({
-      userName,
-      email,
-      password: hashedPassword,
+        userName,
+        email,
+        password: hashedPassword,
     });
 
     try {
-      if (createUser) {
-        console.log(createUser);
-        res.status(201).json({ msg: "User created successfully" });
-        return createUser;
-      }
+        if (createUser) {
+            console.log(createUser);
+            res.status(201).json({ msg: "User created successfully" });
+            return createUser;
+        }
     } catch (error) {
-      throw error;
+        throw error;
     }
-  };
-
+};
 
 
   //************user signin  ***********/

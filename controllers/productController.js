@@ -55,7 +55,7 @@ exports.getAllProducts = async (req, res) => {
     let { userId, role } = req.user; // Assuming req.user is the object
     userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
     const products = await Product.findAll({
-      include:[{model:Store,where:{userId}}]
+      include:[{model:Store,where:{userId}},{model:Category,atttributes:['name']}]
     });
     res.status(200).json(products);
   } catch (error) {
@@ -266,6 +266,7 @@ exports.filterAllProducts = async (req, res) => {
 };
 
 
+
 let transferLog = [];
 
 exports.transferProduct = async (req, res) => {
@@ -283,11 +284,9 @@ exports.transferProduct = async (req, res) => {
       if (!staffRecord) {
         return res.status(404).json({ message: 'User not found as staff member.' });
       }
-
       // Set the userId to the userId associated with the staff member
       userId = staffRecord.userId; 
     }
-
     // Find the current store record for the given userId
     const currentStoreRecord = await Store.findOne({
       where: { storeName: currentStore, userId },
@@ -383,7 +382,6 @@ exports.transferProduct = async (req, res) => {
         storeId: destinationStoreRecord.storeId,
       });
     }
-
     // Log the transfer
     const transferDetails = {
       userId: userId,
@@ -400,9 +398,7 @@ exports.transferProduct = async (req, res) => {
         },
       },
     };
-
     transferLog.push(transferDetails);
-
     // Send success response
     res.status(200).json({
       message: 'Product transfer successful.',
@@ -419,8 +415,6 @@ exports.transferProduct = async (req, res) => {
     res.status(500).json({ message: 'An error occurred during product transfer.', error });
   }
 };
-
- 
  // Get all transfers related to the user's company
  exports.getTransferLog = async (req, res) => {
    try {
@@ -440,3 +434,24 @@ exports.transferProduct = async (req, res) => {
      res.status(500).json({ message: 'An error occurred while fetching transfer logs.' });
    }
  };
+
+exports.skillTopImage = async (req, res) => {
+  try {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+          folder: "image",   
+          width: 300,    
+          crop: "scale"      
+      });
+      res.json({
+          message: "Image uploaded successfully",
+          imageUrl: result.secure_url 
+      });
+      console.log(imageUrl)
+  } catch (error) {
+      res.status(500).json({
+          message: "Image upload failed",
+          error: error.message
+      });
+  }
+};
+

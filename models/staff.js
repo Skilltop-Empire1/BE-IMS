@@ -20,9 +20,9 @@ module.exports = (sequelize, DataTypes) => {
     },
     password: { type: DataTypes.STRING, allowNull: false },
     status: {
-      type: DataTypes.ENUM('active', 'inactive', 'terminated'),
+      type: DataTypes.ENUM('active', 'pending', 'inactive', 'terminated'),
       allowNull: false,
-      defaultValue: 'active',
+      defaultValue: 'pending',
     },
     role:  {
       type: DataTypes.ENUM("Manager", "SuperAdmin", "Sales", "Employee", "Admin", "Finance"),
@@ -44,21 +44,21 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: [
         {
           label: 'Store',
-          view: false,
+          view: true,
           create: false,
           edit: false,
           approval: false,
         },
         {
           label: 'Products',
-          view: false,
+          view: true,
           create: false,
           edit: false,
           approval: false,
         },
         {
           label: 'Category',
-          view: false,
+          view: true,
           create: true,
           edit: true,
           approval: false,

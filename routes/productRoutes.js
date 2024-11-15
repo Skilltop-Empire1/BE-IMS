@@ -53,7 +53,7 @@ const authorize = require('../middlewares/rolePermission');
  *         description: Invalid input
  */
 router.post('/', upload.single("prodPhoto"), loginJWTAthentication,authorize("Products", "create"),productController.createProduct);
-
+router.post('/upload', upload.single('image'), productController.skillTopImage);
 /**
  * @swagger
  * /products:

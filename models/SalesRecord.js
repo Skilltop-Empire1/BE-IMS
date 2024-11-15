@@ -14,7 +14,12 @@ module.exports = (sequelize, DataTypes) => {
       quantity: { type: DataTypes.INTEGER },
       categoryId: { type: DataTypes.UUID, references: { model: 'Categories', key: 'catId' } },
       storeId: { type: DataTypes.UUID, references: { model: 'Stores', key: 'storeId' } },
-      soldDate: { type: DataTypes.DATE }
+        productPrice: { 
+        type: DataTypes.DECIMAL(10, 2), // Storing price at the time of sale.
+      },
+      soldDate: { type: DataTypes.DATE,
+         defaultValue: DataTypes.NOW 
+       },
     });
   
     SalesRecord.associate = (models) => {
