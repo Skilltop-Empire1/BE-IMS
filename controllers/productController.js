@@ -160,7 +160,7 @@ exports.getProductsByStore = async (req, res) => {
 // Update product stock
 exports.updateProductStock = async (req, res) => {
   try {
-    const product = await Product.findByPk(req.params.prodId);
+    const product = await Product.findByPk(req.params.praodId);
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }
@@ -265,6 +265,176 @@ exports.filterAllProducts = async (req, res) => {
   }
 };
 
+
+
+let transferLog = [];
+
+exports.transferProduct = async (req, res) => {
+  try {
+    const { name, quantity, currentStore, reasonForTransfer, currentCategory, destinationStore, destinationCategory } = req.body;
+    let { userId, role } = req.user;  // Get userId and role from the authenticated user
+
+    // check if the userId belongs to a staff member
+    if (role !== 'superAdmin') {
+      const staffRecord = await Staff.findOne({
+        where: { staffId: userId }, 
+      });
+
+      // If no staff record is found, return 
+      if (!staffRecord) {
+        return res.status(404).json({ message: 'User not found as staff member.' });
+      }
+      // Set the userId to the userId associated with the staff member
+      userId = staffRecord.userId; 
+    }
+    // Find the current store record for the given userId
+    const currentStoreRecord = await Store.findOne({
+      where: { storeName: currentStore, userId },
+    });
+
+    if (!currentStoreRecord) {
+      return res.status(404).json({ message: 'Current store not found for this user.' });
+    }
+
+    const destinationStoreRecord = await Store.findOne({
+      where: { storeName: destinationStore, userId },
+    });
+
+    if (!destinationStoreRecord) {
+      return res.status(404).json({ message: 'Destination store not found for this user.' });
+    }
+
+    const currentCategoryRecord = await Category.findOne({
+      where: { name: currentCategory, storeId: currentStoreRecord.storeId },
+    });
+
+    if (!currentCategoryRecord) {
+      return res.status(404).json({ message: 'Current category not found in the specified store.' });
+    }
+
+    const destinationCategoryRecord = await Category.findOne({
+      where: { name: destinationCategory, storeId: destinationStoreRecord.storeId },
+    });
+
+    if (!destinationCategoryRecord) {
+      return res.status(404).json({ message: 'Destination category not found in the specified store.' });
+    }
+
+    // Step 3: Proceed with the original transfer logic using the userId and category IDs
+    const productRecord = await Product.findOne({
+      where: {
+        name,
+        categoryId: currentCategoryRecord.catId,
+        storeId: currentStoreRecord.storeId,
+      },
+    });
+
+    if (!productRecord) {
+      return res.status(404).json({ message: 'Product not found in the specified category and store.' });
+    }
+
+    // Check if the user has permission to transfer the product
+    if (role !== 'superAdmin') {
+      // Ensure that the user is authorized to transfer between stores they own
+      if (currentStoreRecord.userId !== userId || destinationStoreRecord.userId !== userId) {
+        return res.status(403).json({ message: 'You do not have permission to transfer products between these stores.' });
+      }
+    }
+
+    // Ensure stores belong to the same user if not a super admin
+    if (currentStoreRecord.userId !== destinationStoreRecord.userId) {
+      return res.status(400).json({ message: 'Cannot transfer products between different companies.' });
+    }
+
+    // Validate quantity
+    if (productRecord.quantity < quantity) {
+      return res.status(400).json({ message: 'Insufficient quantity for transfer.' });
+    }
+
+    // Step 4: Update quantities and proceed with transfer
+    await Product.update(
+      { quantity: productRecord.quantity - quantity },
+      { where: { prodId: productRecord.prodId } }
+    );
+
+    const destinationProduct = await Product.findOne({
+      where: {
+        name,
+        categoryId: destinationCategoryRecord.catId,
+        storeId: destinationStoreRecord.storeId,
+      },
+    });
+
+    if (destinationProduct) {
+      await Product.update(
+        { quantity: destinationProduct.quantity + quantity },
+        { where: { prodId: destinationProduct.prodId } }
+      );
+    } else {
+      await Product.create({
+        name: productRecord.name,
+        price: productRecord.price,
+        itemCode: productRecord.itemCode,
+        prodPhoto: productRecord.prodPhoto,
+        alertStatus: productRecord.alertStatus,
+        quantity,
+        categoryId: destinationCategoryRecord.catId,
+        storeId: destinationStoreRecord.storeId,
+      });
+    }
+    // Log the transfer
+    const transferDetails = {
+      userId: userId,
+      product: {
+        name,
+        transferredQuantity: quantity,
+        from: {
+          store: currentStoreRecord.storeName,
+          category: currentCategoryRecord.name,
+        },
+        to: {
+          store: destinationStoreRecord.storeName,
+          category: destinationCategoryRecord.name,
+        },
+      },
+    };
+    transferLog.push(transferDetails);
+    // Send success response
+    res.status(200).json({
+      message: 'Product transfer successful.',
+      userId,
+      product: {
+        name,
+        transferredQuantity: quantity,
+        from: { store: currentStoreRecord.storeName, category: currentCategoryRecord.name },
+        to: { store: destinationStoreRecord.storeName, category: destinationCategoryRecord.name },
+      },
+    });
+  } catch (error) {
+    console.error('Error during product transfer:', error);
+    res.status(500).json({ message: 'An error occurred during product transfer.', error });
+  }
+};
+ // Get all transfers related to the user's company
+ exports.getTransferLog = async (req, res) => {
+   try {
+     const { userId, role } = req.user;
+ 
+     // Get the company-related userId for staff or superAdmin role
+     const companyUserId = role === 'superAdmin' ? userId : 
+       (await Staff.findOne({ where: { staffId: userId } })).userId;
+ 
+     const companyTransfers = transferLog.filter(
+       (transfer) => transfer.userId === companyUserId
+     );
+ 
+     res.status(200).json({ transfers: companyTransfers });
+   } catch (error) {
+     console.error('Error fetching transfers:', error);
+     res.status(500).json({ message: 'An error occurred while fetching transfer logs.' });
+   }
+ };
+
 exports.skillTopImage = async (req, res) => {
   try {
       const result = await cloudinary.uploader.upload(req.file.path, {
@@ -284,3 +454,4 @@ exports.skillTopImage = async (req, res) => {
       });
   }
 };
+
