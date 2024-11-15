@@ -160,7 +160,7 @@ exports.getProductsByStore = async (req, res) => {
 // Update product stock
 exports.updateProductStock = async (req, res) => {
   try {
-    const product = await Product.findByPk(req.params.praodId);
+    const product = await Product.findByPk(req.params.prodId);
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }
