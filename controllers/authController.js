@@ -129,7 +129,7 @@ class UserObject {
     const { userName, email, password } = req.body;
 
     // **Block new users from signing up**
-    const allowNewUsers = false; 
+    const allowNewUsers = true; 
     if (!allowNewUsers) {
         return res.status(403).json({ msg: "New users not allowed, Please contact support" });
     }
