@@ -138,7 +138,7 @@ return res.status(500).json({ message: 'Internal Server Error' });
           },
           {
             model: Store,
-            attributes: ['storeName'],
+            attributes: ['storeName','location','storePhoto'],
           },
         ],
         attributes: [
