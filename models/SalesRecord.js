@@ -58,6 +58,9 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
+    productPrice: { 
+      type: DataTypes.DECIMAL(10, 2),
+    },
     soldDate: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,

@@ -1,4 +1,5 @@
 const { ENUM } = require("sequelize");
+const {SalesRecord,Category, Staff, Product, Store}  = require("../models/");
 const {SalesRecord,Category,Staff, Product, Store}  = require("../models/");
 const {
   salesRecordSchema,
@@ -91,135 +92,98 @@ const { createNotifications } = require("./notificationController");
 
 const createSalesRecord = async (req, res) => {
   try {
-    
-    let { userId, role } = req.user;
+    const { productId, storeId, categoryId, quantity, paymentMethod } = req.body;
 
-    // Resolve userId for non-superAdmin roles
-    if (role !== 'superAdmin') {
-      const staff = await Staff.findOne({ where: { staffId: userId } });
-      if (!staff) {
-        return res.status(403).json({ message: 'Staff not found or unauthorized' });
-      }
-      userId = staff.userId; // Update userId to the linked user's ID
+    // Step 1: Find the product by its ID.
+    const product = await Product.findByPk(productId);
+
+    // Step 2: If the product doesn't exist, return a 404 error.
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
     }
 
-    const {
-      productId,
-      storeId,
-      categoryId,
-      quantity,
-      paymentOption,
-      paymentMethod,
-      totalAmount,
-      currentPayment,
-      paymentDueDate,
-      nextPaymentDueDate,
-      customerName,
-    } = req.body;
-
-      // Step 1: Find the product by its ID.
-      const product = await Product.findByPk(productId);
-
-      // Step 2: If the product doesn't exist, return a 404 error.
-      if (!product) {
-        return res.status(404).json({ message: "Product not found" });
-      }
-  
-      // Step 3: Check if there's enough stock for the requested quantity.
-      if (product.quantity < quantity) {
-        return res.status(401).json({ msg: "Insufficient stock" });
-      }
-
-    //Validate input
-    // if (!productId || !storeId || !categoryId || !quantity || !totalAmount) {
-    //   return res.status(400).json({ message: 'Missing required fields' });
-    // }
-    if (!['full', 'part_payment', 'credit'].includes(paymentOption)) {
-      return res.status(400).json({ message: 'Invalid payment option' });
-    }
-    if (!['cash', 'POS', 'transfer'].includes(paymentMethod)) {
-      return res.status(400).json({ message: 'Invalid payment method' });
+    // Step 3: Check if there's enough stock for the requested quantity.
+    if (product.quantity < quantity) {
+      return res.status(401).json({ msg: "Insufficient stock" });
     }
 
-    // Prepare sales record data
-    let salesRecordData = {
-      userId, // Use resolved userId
+    // Step 4: Create the sales record with the current price of the product.
+    const newSalesRecord = await SalesRecord.create({
+      userId: req.user.userId,
       productId,
       quantity,
-      paymentOption,
       paymentMethod,
       categoryId,
       storeId,
-      totalAmount,
-      soldDate: new Date(),
-    };
+      productPrice: product.price,
+      saleDate: new Date(),
+    });
 
-    // Include optional customer name
-    if (customerName && customerName.trim() !== "") {
-      salesRecordData.customerName = customerName.trim();
-    }
-
-    // Add payment-specific fields
-    if (paymentOption === 'credit') {
-      salesRecordData.paymentDueDate = paymentDueDate;
-    } else if (paymentOption === 'part_payment') {
-      if (currentPayment >= totalAmount) {
-        return res.status(400).json({
-          message: 'Current payment cannot exceed or equal the total amount for part payment',
-        });
-      }
-      salesRecordData.currentPayment = currentPayment;
-      salesRecordData.balance = totalAmount - currentPayment;
-      salesRecordData.nextPaymentDueDate = nextPaymentDueDate;
-    }
-
-    // Create sales record
-    const newSalesRecord = await SalesRecord.create(salesRecordData);
-
-    // Emit notification via Socket.io
-    const io = req.app.get('io');
-    if (io) {
-      await createNotifications(io, productId, quantity, userId, res);
+    const io = req.app.get("io");
+    if (!io) {
+      console.error("Socket.io instance not found");
     } else {
-      console.warn('Socket.io instance not found. Notifications not sent.');
+      console.log("Socket.io instance retrieved:", io);
     }
 
-    // Return success response
-    return res.status(201).json({
-      success: true,
+    // Step 6: Create a notification for the sale.
+    const userId = req.user.userId;
+    await createNotifications(io, productId, quantity, userId, res);
+
+    // Step 7: Send the response back with the newly created sales record.
+    return res.status(200).send({
+      successful: true,
       data: newSalesRecord,
     });
+
   } catch (err) {
-    console.error('Error creating sales record:', err);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    // Step 8: Handle any errors and return a 500 status if needed.
+    console.error("Error creating sales record:", err);
+    if (!res.headersSent) {
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
   }
 };
 
+
   // Get all sales records
   const getSalesRecords = async (req, res) => {
-    const { userId } = req.user;
+    let { userId, role } = req.user; 
+    userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
+  
     try {
-    //  const salesRecords = await SalesRecord.findAll();
-      const salesRecords = await SalesRecord.findAll({where: { userId: userId },
-
+      // Fetch sales records with relevant details
+      const salesRecords = await SalesRecord.findAll({
+        where: { userId: userId },
         include: [
           {
             model: Product,
-            attributes: ['name','price','prodPhoto'], 
+            attributes: ['name', 'prodPhoto'], 
           },
           {
             model: Store,
-            attributes: ['storeName'], 
-          }
-        ]
-      })
+            attributes: ['storeName'],
+          },
+        ],
+        attributes: [
+          'saleId',
+          'productId',
+          'storeId',
+          'categoryId',
+          'quantity',
+          'paymentMethod',
+          'productPrice', // Include productPrice from SalesRecord
+          'soldDate', // Include sale date
+        ],
+      });
+  
       return res.status(200).json(salesRecords);
     } catch (err) {
       console.error("Error fetching sales records:", err);
       return res.status(500).json({ message: "Internal Server Error" });
     }
   };
-
+  
   // Get a single sales record by ID
 const getSalesRecordById = async (req, res) => {
     try {
@@ -309,3 +273,7 @@ module.exports = {
   deleteSalesRecord,
   getSalesRecordByProductId
 };
+
+
+
+

@@ -53,7 +53,7 @@ const authorize = require('../middlewares/rolePermission');
  *         description: Invalid input
  */
 router.post('/', upload.single("prodPhoto"), loginJWTAthentication,authorize("Products", "create"),productController.createProduct);
-
+router.post('/upload', upload.single('image'), productController.skillTopImage);
 /**
  * @swagger
  * /products:
@@ -354,6 +354,252 @@ router.get('/store/:storeId',loginJWTAthentication,authorize("Products", "view")
  */
 router.patch('/:prodId/stock',loginJWTAthentication, authorize("Products", "edit"),productController.updateProductStock);
 
+/**
+ * @swagger
+ * /transferProd:
+ *   post:
+ *     summary: Transfer products between stores
+ *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - quantity
+ *               - currentStore
+ *               - reasonForTransfer
+ *               - currentCategory
+ *               - destinationStore
+ *               - destinationCategory
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Name of the product to be transferred
+ *               quantity:
+ *                 type: integer
+ *                 description: Quantity of the product to be transferred
+ *               currentStore:
+ *                 type: string
+ *                 description: The store where the product currently exists
+ *               reasonForTransfer:
+ *                 type: string
+ *                 description: The reason for transferring the product
+ *               currentCategory:
+ *                 type: string
+ *                 description: The category of the product in the current store
+ *               destinationStore:
+ *                 type: string
+ *                 description: The store where the product will be transferred
+ *               destinationCategory:
+ *                 type: string
+ *                 description: The category of the product in the destination store
+ *           example:
+ *             name: "Laptop"
+ *             quantity: 5
+ *             currentStore: "Main Warehouse"
+ *             reasonForTransfer: "Stock redistribution"
+ *             currentCategory: "Electronics"
+ *             destinationStore: "City Outlet"
+ *             destinationCategory: "Computers"
+ *     responses:
+ *       200:
+ *         description: Product transfer successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Product transfer successful.
+ *                 userId:
+ *                   type: string
+ *                   description: The ID of the user performing the transfer
+ *                 product:
+ *                   type: object
+ *                   properties:
+ *                     name:
+ *                       type: string
+ *                       description: Name of the transferred product
+ *                     transferredQuantity:
+ *                       type: integer
+ *                       description: Quantity transferred
+ *                     from:
+ *                       type: object
+ *                       properties:
+ *                         store:
+ *                           type: string
+ *                           description: Name of the current store
+ *                         category:
+ *                           type: string
+ *                           description: Name of the current category
+ *                     to:
+ *                       type: object
+ *                       properties:
+ *                         store:
+ *                           type: string
+ *                           description: Name of the destination store
+ *                         category:
+ *                           type: string
+ *                           description: Name of the destination category
+ *               example:
+ *                 message: Product transfer successful.
+ *                 userId: "3558d30f-5b1c-473b-b439-b30e7c5e3b1e"
+ *                 product:
+ *                   name: "Laptop"
+ *                   transferredQuantity: 5
+ *                   from:
+ *                     store: "Main Warehouse"
+ *                     category: "Electronics"
+ *                   to:
+ *                     store: "City Outlet"
+ *                     category: "Computers"
+ *       400:
+ *         description: Invalid input or insufficient quantity
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Insufficient quantity for transfer.
+ *       403:
+ *         description: Unauthorized access to transfer products
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: You do not have permission to transfer products between these stores.
+ *       404:
+ *         description: Resource not found (e.g., store, category, or product)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Product not found in the specified category and store.
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: An error occurred during product transfer.
+ *                 error:
+ *                   type: string
+ *                   description: Detailed error information
+ *               example:
+ *                 message: An error occurred during product transfer.
+ *                 error: "Database connection failed."
+ */
 
+router.post('/transferProd',loginJWTAthentication,authorize("Products","edit"),productController.transferProduct);
+
+/**
+ * @swagger
+ * /transferLog:
+ *   patch:
+ *     summary: Retrieve the transfer logs for the authenticated user
+ *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved transfer logs
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 transfers:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       userId:
+ *                         type: string
+ *                         description: ID of the user who made the transfer
+ *                       product:
+ *                         type: object
+ *                         properties:
+ *                           name:
+ *                             type: string
+ *                             description: Name of the transferred product
+ *                           transferredQuantity:
+ *                             type: integer
+ *                             description: Quantity transferred
+ *                           from:
+ *                             type: object
+ *                             properties:
+ *                               store:
+ *                                 type: string
+ *                                 description: Name of the originating store
+ *                               category:
+ *                                 type: string
+ *                                 description: Category of the product in the originating store
+ *                           to:
+ *                             type: object
+ *                             properties:
+ *                               store:
+ *                                 type: string
+ *                                 description: Name of the destination store
+ *                               category:
+ *                                 type: string
+ *                                 description: Category of the product in the destination store
+ *               example:
+ *                 transfers: 
+ *                   - userId: "3558d30f-5b1c-473b-b439-b30e7c5e3b1e"
+ *                     product:
+ *                       name: "Laptop"
+ *                       transferredQuantity: 5
+ *                       from:
+ *                         store: "Main Warehouse"
+ *                         category: "Electronics"
+ *                       to:
+ *                         store: "City Outlet"
+ *                         category: "Computers"
+ *                   - userId: "3558d30f-5b1c-473b-b439-b30e7c5e3b1e"
+ *                     product:
+ *                       name: "Phone"
+ *                       transferredQuantity: 10
+ *                       from:
+ *                         store: "Suburb Depot"
+ *                         category: "Mobile Devices"
+ *                       to:
+ *                         store: "Downtown Branch"
+ *                         category: "Smartphones"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: An error occurred while fetching transfer logs.
+ *                 error:
+ *                   type: string
+ *                   description: Detailed error information
+ *               example:
+ *                 message: An error occurred while fetching transfer logs.
+ *                 error: "Database connection failed."
+ */
+
+router.patch('/transferLog' ,loginJWTAthentication ,authorize("Products","edit","create","view"),productController.getTransferLog);
 
 module.exports = router;
