@@ -1,5 +1,4 @@
 const { ENUM } = require("sequelize");
-const {SalesRecord,Category, Staff, Product, Store}  = require("../models/");
 const {SalesRecord,Category,Staff, Product, Store}  = require("../models/");
 const {
   salesRecordSchema,
@@ -9,143 +8,119 @@ const { createNotifications } = require("./notificationController");
 
 
 // Create a new sales record
-// const createSalesRecord = async (req, res) => {
-//   try {
-//     let { userId, role } = req.user;
-//     userId = role === 'superAdmin' ? userId : (await Staff.findOne({ where: { staffId: userId } })).userId;
-
-//     const {
-//       productId,
-//       storeId,
-//       categoryId,
-//       quantity,
-//       paymentOption,
-//       paymentMethod,
-//       totalAmount,
-//       currentPayment,
-//       paymentDueDate,
-//       nextPaymentDueDate,
-//       customerName, // Add customer's name (optional)
-//     } = req.body;
-
-//     // Validate input
-//     if (!['full', 'part_payment', 'credit'].includes(paymentOption)) {
-//       return res.status(400).json({ message: 'Invalid payment option' });
-//     }
-//     if (!['cash', 'POS', 'transfer'].includes(paymentMethod)) {
-//       return res.status(400).json({ message: 'Invalid payment method' });
-//     }
-
-//     // Base sales record data
-//     let salesRecordData = {
-//       userId: req.user.userId,
-//       productId,
-//       quantity,
-//       paymentOption,
-//       paymentMethod,
-//       categoryId,
-//       storeId,
-//       totalAmount,
-//       soldDate: new Date(),
-//     };
-
-//     // Include customer name if provided
-//     if (customerName && customerName.trim() !== "") {
-//       salesRecordData.customerName = customerName.trim();
-//     }
-
-//     // Add payment option-specific fields
-//     if (paymentOption === 'credit') {
-//       salesRecordData.paymentDueDate = paymentDueDate;
-//     } else if (paymentOption === 'part_payment') {
-//       if (currentPayment >= totalAmount) {
-//         return res.status(400).json({
-//           message: 'Current payment cannot exceed or equal the total amount for part payment',
-//         });
-//       }
-//       salesRecordData.currentPayment = currentPayment;
-//       salesRecordData.balance = totalAmount - currentPayment;
-//       salesRecordData.nextPaymentDueDate = nextPaymentDueDate;
-//     }
-
-//     // Create the sales record
-//     const newSalesRecord = await SalesRecord.create(salesRecordData);
-
-//     // Emit notification using Socket.io
-//     const io = req.app.get('io');
-//     if (!io) {
-//       console.error('Socket.io instance not found');
-//     } else {
-//       console.log('Socket.io instance retrieved:', io);
-//     }
-//     await createNotifications(io, productId, quantity, req.user.userId, res);
-
-//     return res.status(201).json({
-//       success: true,
-//       data: newSalesRecord,
-//     });
-//   } catch (err) {
-//     console.error('Error creating sales record:', err);
-//     return res.status(500).json({ message: 'Internal Server Error' });
-//   }
-// };
-
 const createSalesRecord = async (req, res) => {
   try {
-    const { productId, storeId, categoryId, quantity, paymentMethod } = req.body;
 
-    // Step 1: Find the product by its ID.
-    const product = await Product.findByPk(productId);
+let { userId, role } = req.user;
 
-    // Step 2: If the product doesn't exist, return a 404 error.
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-    // Step 3: Check if there's enough stock for the requested quantity.
-    if (product.quantity < quantity) {
-      return res.status(401).json({ msg: "Insufficient stock" });
-    }
-
-    // Step 4: Create the sales record with the current price of the product.
-    const newSalesRecord = await SalesRecord.create({
-      userId: req.user.userId,
-      productId,
-      quantity,
-      paymentMethod,
-      categoryId,
-      storeId,
-      productPrice: product.price,
-      saleDate: new Date(),
-    });
-
-    const io = req.app.get("io");
-    if (!io) {
-      console.error("Socket.io instance not found");
-    } else {
-      console.log("Socket.io instance retrieved:", io);
-    }
-
-    // Step 6: Create a notification for the sale.
-    const userId = req.user.userId;
-    await createNotifications(io, productId, quantity, userId, res);
-
-    // Step 7: Send the response back with the newly created sales record.
-    return res.status(200).send({
-      successful: true,
-      data: newSalesRecord,
-    });
-
-  } catch (err) {
-    // Step 8: Handle any errors and return a 500 status if needed.
-    console.error("Error creating sales record:", err);
-    if (!res.headersSent) {
-      return res.status(500).json({ message: "Internal Server Error" });
-    }
+// Resolve userId for non-superAdmin roles
+if (role !== 'superAdmin') {
+  const staff = await Staff.findOne({ where: { staffId: userId } });
+  if (!staff) {
+    return res.status(403).json({ message: 'Staff not found or unauthorized' });
   }
+  userId = staff.userId; // Update userId to the linked user's ID
+}
+
+const {
+  productId,
+  storeId,
+  categoryId,
+  quantity,
+  paymentOption,
+  paymentMethod,
+  totalAmount,
+  currentPayment,
+  paymentDueDate,
+  nextPaymentDueDate,
+  customerPhone,
+  customerName,
+} = req.body;
+
+  // Step 1: Find the product by its ID.
+  const product = await Product.findByPk(productId);
+
+  // Step 2: If the product doesn't exist, return a 404 error.
+  if (!product) {
+    return res.status(404).json({ message: "Product not found" });
+  }
+
+  // Step 3: Check if there's enough stock for the requested quantity.
+  if (product.quantity < quantity) {
+    return res.status(401).json({ msg: "Insufficient stock" });
+  }
+
+//Validate input
+// if (!productId || !storeId || !categoryId || !quantity || !totalAmount) {
+//   return res.status(400).json({ message: 'Missing required fields' });
+// }
+if (!['full', 'part_payment', 'credit'].includes(paymentOption)) {
+  return res.status(400).json({ message: 'Invalid payment option' });
+}
+
+if (paymentOption !== 'credit' && !['cash', 'POS', 'transfer'].includes(paymentMethod)) {
+  return res.status(400).json({ message: 'Invalid payment method' });
+}
+
+// Prepare sales record data
+let salesRecordData = {
+  userId, // Use resolved userId
+  productId,
+  quantity,
+  paymentOption,
+  paymentMethod:paymentOption === 'credit' ? 'credit' : paymentMethod,
+  categoryId,
+  storeId,
+  totalAmount,
+  customerPhone,
+  productPrice: product.price,
+  soldDate: new Date(),
 };
 
+// Include optional customer name
+if (customerName && customerName.trim() !== "") {
+  salesRecordData.customerName = customerName.trim();
+}
 
+// Add payment-specific fields
+if (paymentOption === 'credit') {
+  salesRecordData.paymentDueDate = paymentDueDate;
+
+} else if (paymentOption === 'part_payment') {
+  if (currentPayment >= totalAmount) {
+    return res.status(400).json({
+      message: 'Current payment cannot exceed or equal the total amount for part payment',
+    });
+  }
+  salesRecordData.currentPayment = currentPayment;
+  salesRecordData.balance = totalAmount - currentPayment;
+  salesRecordData.nextPaymentDueDate = nextPaymentDueDate;
+}
+
+// Create sales record
+const newSalesRecord = await SalesRecord.create(salesRecordData);
+
+// Emit notification via Socket.io
+const io = req.app.get('io');
+if (io) {
+  await createNotifications(io, productId, quantity, userId, res);
+} else {
+  console.warn('Socket.io instance not found. Notifications not sent.');
+}
+// Step 6: Create a notification for the sale.
+
+await createNotifications(io, productId, quantity, userId, res);
+// Return success response
+return res.status(201).json({
+  success: true,
+  data: newSalesRecord,
+});
+
+} catch (err) {
+console.error('Error creating sales record:', err);
+return res.status(500).json({ message: 'Internal Server Error' });
+}}
+;
   // Get all sales records
   const getSalesRecords = async (req, res) => {
     let { userId, role } = req.user; 

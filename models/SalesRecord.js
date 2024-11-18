@@ -1,3 +1,5 @@
+const { custom } = require("joi");
+
 module.exports = (sequelize, DataTypes) => {
   const SalesRecord = sequelize.define('SalesRecord', {
     saleId: {
@@ -18,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
     },
     paymentMethod: {
-      type: DataTypes.ENUM('cash', 'POS', 'transfer'),
+      type: DataTypes.ENUM('cash', 'POS', 'transfer','credit' ),
       allowNull: false,
     },
     totalAmount: {
@@ -55,6 +57,10 @@ module.exports = (sequelize, DataTypes) => {
 
     },
     customerName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    customerPhone: {
       type: DataTypes.STRING,
       allowNull: true,
     },
