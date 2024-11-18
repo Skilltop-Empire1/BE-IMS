@@ -73,6 +73,7 @@ let salesRecordData = {
   storeId,
   totalAmount,
   customerPhone,
+  customerName,
   productPrice: product.price,
   soldDate: new Date(),
 };
@@ -146,13 +147,24 @@ return res.status(500).json({ message: 'Internal Server Error' });
           'storeId',
           'categoryId',
           'quantity',
+          'paymentOption',
+          'totalAmount',
+          'customerPhone',
+          'customerName',
           'paymentMethod',
-          'productPrice', // Include productPrice from SalesRecord
-          'soldDate', // Include sale date
+          'productPrice', 
+          'soldDate',
+          'balance',
+          'nextPaymentDueDate',
+          'currentPayment',
+          'paymentDueDate'
         ],
       });
-  
-      return res.status(200).json(salesRecords);
+      return res.json({
+        status:200,
+        success: true,
+        data: salesRecords,
+      });
     } catch (err) {
       console.error("Error fetching sales records:", err);
       return res.status(500).json({ message: "Internal Server Error" });
@@ -176,10 +188,10 @@ const getSalesRecordById = async (req, res) => {
 
   const getSalesRecordByProductId = async (req, res) => {
     try {
-      const { productId } = req.params; // Extract productId from request parameters
+      const { productId } = req.params; 
       const salesRecords = await SalesRecord.findAll({
         where: {
-          productId: productId, // Match productId from params
+          productId: productId, 
         },
       });
   
