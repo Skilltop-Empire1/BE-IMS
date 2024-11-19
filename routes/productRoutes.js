@@ -506,7 +506,7 @@ router.post('/transferProd',loginJWTAthentication,authorize("Products","edit"),p
  * /products/transferLog:
  *   patch:
  *     summary: Retrieve the transfer log for the authenticated user
- *     tags: [Transfer Logs]
+ *     tags: [Products]
  *     security:
  *       - bearerAuth: []
  *     responses:
