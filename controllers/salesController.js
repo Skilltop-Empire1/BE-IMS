@@ -31,8 +31,8 @@ const {
   paymentMethod,
   totalAmount,
   currentPayment,
-  paymentDueDate,
-  nextPaymentDueDate,
+  paymentDate,
+  nextPaymentDate,
   customerPhone,
   customerName,
 } = req.body;
@@ -74,6 +74,9 @@ let salesRecordData = {
   totalAmount,
   customerPhone,
   customerName,
+  paymentDate,
+  nextPaymentDate,
+  currentPayment,
   productPrice: product.price,
   soldDate: new Date(),
 };
@@ -84,18 +87,17 @@ if (customerName && customerName.trim() !== "") {
 }
 
 // Add payment-specific fields
-if (paymentOption === 'credit') {
-  salesRecordData.paymentDueDate = paymentDueDate;
+// if (paymentOption === 'credit') {
+//   salesRecordData. = paymentDueDate;
+// } else 
 
-} else if (paymentOption === 'part_payment') {
+if (paymentOption === 'part_payment') {
   if (currentPayment >= totalAmount) {
     return res.status(400).json({
       message: 'Current payment cannot exceed or equal the total amount for part payment',
     });
   }
-  salesRecordData.currentPayment = currentPayment;
   salesRecordData.balance = totalAmount - currentPayment;
-  salesRecordData.nextPaymentDueDate = nextPaymentDueDate;
 }
 
 // Create sales record
@@ -152,12 +154,12 @@ return res.status(500).json({ message: 'Internal Server Error' });
           'customerPhone',
           'customerName',
           'paymentMethod',
-          'productPrice', 
+          'productPrice',
           'soldDate',
           'balance',
-          'nextPaymentDueDate',
+          'nextPaymentDate',
           'currentPayment',
-          'paymentDueDate'
+          'paymentDate'
         ],
       });
       return res.json({
@@ -184,7 +186,7 @@ const getSalesRecordById = async (req, res) => {
       console.error("Error fetching sales record:", err);
       return res.status(500).json({ message: "Internal Server Error" });
     }
-  };
+};
 
   const getSalesRecordByProductId = async (req, res) => {
     try {

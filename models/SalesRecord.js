@@ -35,11 +35,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DECIMAL,
       allowNull: true,
     },
-    paymentDueDate: {
+    paymentDate: {
       type: DataTypes.DATE,
       allowNull: true,
     },
-    nextPaymentDueDate: {
+    nextPaymentDate: {
       type: DataTypes.DATE,
       allowNull: true,
     },
