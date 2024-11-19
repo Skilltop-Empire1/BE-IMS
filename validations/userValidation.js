@@ -30,6 +30,23 @@ const changePassword = Joi.object({
   confirmPassword: Joi.string().required(),
 })
 
+const planValidation = Joi.object({
+  email: Joi.string().email().required(),
+  phone:Joi.string().required().min(11),
+  businessName: Joi.string().required(),
+  subscribedPlan: Joi.string().required(),
+})
+
+
+const demoValidation = Joi.object({
+  firstName: Joi.string().required(),
+  lastName: Joi.string().required(),
+  email: Joi.string().email().required(),
+  phone:Joi.string().required().min(11),
+  state: Joi.string().required(),
+  company: Joi.string().required(),
+  title: Joi.string().required(),
+})
 
 //*****export module */
 module.exports = {
@@ -37,6 +54,9 @@ module.exports = {
   validateLogin,
   validatePasswordReset,
   changePassword,
-  resetLink
+  resetLink,
+  planValidation,
+  demoValidation 
+
 
 };

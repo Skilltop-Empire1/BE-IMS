@@ -11,6 +11,8 @@ const SalesRecord = require("./SalesRecord")(sequelize, DataTypes);
 const Staff = require("./staff")(sequelize, DataTypes);
 const Notification = require("./Notification")(sequelize, DataTypes)
 const Expenditure = require("./Expenditure")(sequelize, DataTypes)
+const Plan = require("./Plan")(sequelize, DataTypes)
+const Demo = require("./Demo")(sequelize, DataTypes)
 // Define the db object with models and sequelize
 const db = {
   sequelize,
@@ -23,6 +25,8 @@ const db = {
   Staff,
   Notification,
   Expenditure,
+  Plan,
+  Demo,
 };
 
 // Set up model associations
