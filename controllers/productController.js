@@ -63,15 +63,42 @@ exports.getAllProducts = async (req, res) => {
   }
 };
 
-// Get a product by ID
+
+
 exports.getProductById = async (req, res) => {
   try {
     const {prodId} = req.params
-    const product = await Product.findByPk(prodId);
+    const product = await Product.findByPk(prodId, {
+      include: [
+        {
+          model: Category,
+          attributes: ['name'], 
+        },
+        {
+          model: Store,
+          attributes: ['storeName'],
+        },
+      ],
+    });
+
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }
-    res.status(200).json(product);
+     res.status(200).json({
+      prodId: product.prodId,
+      name: product.name,
+      price: product.price,
+      itemCode: product.itemCode,
+      prodPhoto: product.prodPhoto,
+      alertStatus: product.alertStatus,
+      quantity: product.quantity,
+      categoryId: product.categoryId,
+      storeId: product.storeId,
+      storeAvailable: product.storeAvailable,
+      prodDate: product.prodDate,
+      categoryName: product.Category?.name || null, // Add category name
+      storeName: product.Store?.storeName || null,    // Add store name
+    });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -384,31 +411,20 @@ exports.transferProduct = async (req, res) => {
     }
     // Log the transfer
     const transferDetails = {
-      userId: userId,
-      product: {
-        name,
-        transferredQuantity: quantity,
-        from: {
-          store: currentStoreRecord.storeName,
-          category: currentCategoryRecord.name,
-        },
-        to: {
-          store: destinationStoreRecord.storeName,
-          category: destinationCategoryRecord.name,
-        },
-      },
+      userId : userId ,
+      productPhoto: productRecord.prodPhoto,
+      productName: productRecord.name,
+      currentStore: currentStoreRecord.storeName,
+      currentCategory: currentCategoryRecord.name,
+      destinationStore: destinationStoreRecord.storeName,
+      destinationCategory: destinationCategoryRecord.name,
+      quantityTransferred: quantity,
+      dateTransferred: new Date().toISOString(),
     };
     transferLog.push(transferDetails);
-    // Send success response
     res.status(200).json({
       message: 'Product transfer successful.',
-      userId,
-      product: {
-        name,
-        transferredQuantity: quantity,
-        from: { store: currentStoreRecord.storeName, category: currentCategoryRecord.name },
-        to: { store: destinationStoreRecord.storeName, category: destinationCategoryRecord.name },
-      },
+      transferDetails,
     });
   } catch (error) {
     console.error('Error during product transfer:', error);
