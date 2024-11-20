@@ -86,29 +86,29 @@ if (customerName && customerName.trim() !== "") {
   salesRecordData.customerName = customerName.trim();
 }
 
-// Handle paymentOption-specific validations
-// if (paymentOption === 'part_payment') {
-//   if (!currentPayment || currentPayment <= 0 || currentPayment >= totalAmount) {
-//     return res.status(400).json({
-//       message: 'For part payment, current payment must be greater than 0 and less than total amount.',
-//     });
-//   }
-//   salesRecordData.balance = totalAmount - currentPayment;
-// } else if (paymentOption === 'full') {
-//   if (currentPayment !== totalAmount) {
-//     return res.status(400).json({
-//       message: 'For full payment, current payment must equal total amount.',
-//     });
-//   }
-//   salesRecordData.balance = 0; // No balance for full payment
-// } else if (paymentOption === 'credit') {
-//   if (currentPayment && currentPayment > 0) {
-//     return res.status(400).json({
-//       message: 'For credit payment, current payment must be 0.',
-//     });
-//   }
-//   salesRecordData.balance = totalAmount;
-// }
+Handle paymentOption-specific validations
+if (paymentOption === 'part_payment') {
+  if (!currentPayment || currentPayment <= 0 || currentPayment >= totalAmount) {
+    return res.status(400).json({
+      message: 'For part payment, current payment must be greater than 0 and less than total amount.',
+    });
+  }
+  salesRecordData.balance = totalAmount - currentPayment;
+} else if (paymentOption === 'full') {
+  if (currentPayment !== totalAmount) {
+    return res.status(400).json({
+      message: 'For full payment, current payment must equal total amount.',
+    });
+  }
+  salesRecordData.balance = 0; // No balance for full payment
+} else if (paymentOption === 'credit') {
+  if (currentPayment && currentPayment > 0) {
+    return res.status(400).json({
+      message: 'For credit payment, current payment must be 0.',
+    });
+  }
+  salesRecordData.balance = totalAmount;
+}
 
 
 // Create sales record
