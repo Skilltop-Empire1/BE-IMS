@@ -132,6 +132,12 @@ exports.getAllExpenditures = async (req, res) => {
       if (!expenditure) {
         return res.status(404).json({ error: 'Expenditure not found' });
       }
+      const todayDate = new Date()
+      const updatedDate = new Date(expenditure.updatedAt)
+      const timeDiff = todayDate-updatedDate 
+      const monthDiff = Math.floor(timeDiff/(1000*60*60*24*30.44))
+      const percentChange = ((amount-expenditure.amount)*100)/expenditure.amount
+      const monthlyChange = monthDiff >= 28 ? percentChange : expenditure.monthChange
       //update recepit if it exists
       let url = expenditure.uploadReceipt
         if(req.file){
@@ -154,6 +160,7 @@ exports.getAllExpenditures = async (req, res) => {
         annualDepreciation:annualDepreciation || expenditure.annualDepreciation,
         vendor:vendor || expenditure.vendor,
         amount:amount || expenditure.amount,
+        monthChange:monthlyChange,
         notes:notes || expenditure.notes,
         dateOfExpense:dateOfExpense || expenditure.dateOfExpense,
         uploadReceipt:url || expenditure.uploadReceipt,

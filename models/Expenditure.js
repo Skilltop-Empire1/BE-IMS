@@ -34,6 +34,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.FLOAT,
         allowNull: false,
       },
+      monthChange:{
+        type: DataTypes.FLOAT,
+        defaultValue:100,
+        allowNull: false,
+      },
       notes: {
         type: DataTypes.TEXT,
         allowNull: true,
