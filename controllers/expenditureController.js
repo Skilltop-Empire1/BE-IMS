@@ -135,9 +135,9 @@ exports.getAllExpenditures = async (req, res) => {
       const todayDate = new Date()
       const updatedDate = new Date(expenditure.updatedAt)
       const timeDiff = todayDate-updatedDate 
-      const monthDiff = Math.floor(timeDiff/(1000*60*60*24*30.44))
-      const percentChange = ((amount-expenditure.amount)*100)/expenditure.amount
-      const monthlyChange = monthDiff >= 28 ? percentChange : expenditure.monthChange
+      const daysDiff = Math.floor(timeDiff/(1000*60*60*24))
+      const percentChange = expenditure.amount && expenditure.amount !== 0? ((amount-expenditure.amount)*100)/expenditure.amount : 0
+      const monthlyChange = daysDiff >= 28 && amount !== undefined && amount !== expenditure.amount? percentChange : expenditure.monthChange
       //update recepit if it exists
       let url = expenditure.uploadReceipt
         if(req.file){
