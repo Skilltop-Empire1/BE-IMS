@@ -86,28 +86,37 @@ if (customerName && customerName.trim() !== "") {
   salesRecordData.customerName = customerName.trim();
 }
 
-//Handle paymentOption-specific validations
+// Convert currentPayment and totalAmount to numbers for accurate comparisons
+const currentPaymentNumber = parseFloat(currentPayment);
+const totalAmountNumber = parseFloat(totalAmount);
+
+// Check for invalid or missing input
+if (isNaN(currentPaymentNumber) || isNaN(totalAmountNumber)) {
+  return res.status(400).json({ message: 'Invalid or missing payment amount' });
+}
+
+// Handle paymentOption-specific validations
 if (paymentOption === 'part_payment') {
-  if (!currentPayment || currentPayment <= 0 || currentPayment >= totalAmount) {
+  if (currentPaymentNumber <= 0 || currentPaymentNumber >= totalAmountNumber) {
     return res.status(400).json({
       message: 'For part payment, current payment must be greater than 0 and less than total amount.',
     });
   }
-  salesRecordData.balance = totalAmount - currentPayment;
+  salesRecordData.balance = totalAmountNumber - currentPaymentNumber;
 } else if (paymentOption === 'full') {
-  if (currentPayment !== totalAmount) {
+  if (currentPaymentNumber !== totalAmountNumber) {
     return res.status(400).json({
       message: 'For full payment, current payment must equal total amount.',
     });
   }
   salesRecordData.balance = 0; // No balance for full payment
 } else if (paymentOption === 'credit') {
-  if (currentPayment && currentPayment > 0) {
+  if (currentPaymentNumber > 0) {
     return res.status(400).json({
       message: 'For credit payment, current payment must be 0.',
     });
   }
-  salesRecordData.balance = totalAmount;
+  salesRecordData.balance = totalAmountNumber; // Entire amount is due
 }
 
 
