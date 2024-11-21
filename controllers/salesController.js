@@ -86,7 +86,7 @@ if (customerName && customerName.trim() !== "") {
   salesRecordData.customerName = customerName.trim();
 }
 
-Handle paymentOption-specific validations
+//Handle paymentOption-specific validations
 if (paymentOption === 'part_payment') {
   if (!currentPayment || currentPayment <= 0 || currentPayment >= totalAmount) {
     return res.status(400).json({
