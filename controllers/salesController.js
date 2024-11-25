@@ -31,8 +31,8 @@ const {
   paymentMethod,
   totalAmount,
   currentPayment,
-  paymentDueDate,
-  nextPaymentDueDate,
+  paymentDate,
+  nextPaymentDate,
   customerPhone,
   customerName,
 } = req.body;
@@ -74,6 +74,9 @@ let salesRecordData = {
   totalAmount,
   customerPhone,
   customerName,
+  paymentDate,
+  nextPaymentDate,
+  currentPayment,
   productPrice: product.price,
   soldDate: new Date(),
 };
@@ -83,19 +86,62 @@ if (customerName && customerName.trim() !== "") {
   salesRecordData.customerName = customerName.trim();
 }
 
-// Add payment-specific fields
-if (paymentOption === 'credit') {
-  salesRecordData.paymentDueDate = paymentDueDate;
+// Convert currentPayment and totalAmount to numbers for accurate comparisons
+const currentPaymentNumber = currentPayment ? parseFloat(currentPayment) : null;
+const totalAmountNumber = totalAmount ? parseFloat(totalAmount) : null;
 
-} else if (paymentOption === 'part_payment') {
-  if (currentPayment >= totalAmount) {
+// Check for missing or invalid totalAmount
+if (totalAmountNumber === null || isNaN(totalAmountNumber) || totalAmountNumber <= 0) {
+  return res.status(400).json({
+    message: "Invalid or missing total amount. It must be a number greater than 0.",
+  });
+}
+
+// Handle paymentOption-specific validations
+if (paymentOption === "part_payment") {
+  if (currentPaymentNumber === null || isNaN(currentPaymentNumber)) {
     return res.status(400).json({
-      message: 'Current payment cannot exceed or equal the total amount for part payment',
+      message: "Invalid or missing current payment for part payment option.",
     });
   }
-  salesRecordData.currentPayment = currentPayment;
-  salesRecordData.balance = totalAmount - currentPayment;
-  salesRecordData.nextPaymentDueDate = nextPaymentDueDate;
+
+  if (currentPaymentNumber <= 0 || currentPaymentNumber >= totalAmountNumber) {
+    return res.status(400).json({
+      message:
+        "For part payment, current payment must be greater than 0 and less than the total amount.",
+    });
+  }
+
+  // Calculate the balance for part payment
+  salesRecordData.balance = totalAmountNumber - currentPaymentNumber;
+} else if (paymentOption === "full") {
+  if (currentPaymentNumber === null || isNaN(currentPaymentNumber)) {
+    return res.status(400).json({
+      message: "Invalid or missing current payment for full payment option.",
+    });
+  }
+
+  if (currentPaymentNumber !== totalAmountNumber) {
+    return res.status(400).json({
+      message: "For full payment, current payment must equal the total amount.",
+    });
+  }
+
+  // No balance for full payment
+  salesRecordData.balance = 0;
+} else if (paymentOption === "credit") {
+  if (currentPaymentNumber !== null && currentPaymentNumber > 0) {
+    return res.status(400).json({
+      message: "For credit payment, current payment must be 0 or not provided.",
+    });
+  }
+
+  // Entire amount is due for credit payment
+  salesRecordData.balance = totalAmountNumber;
+} else {
+  return res.status(400).json({
+    message: "Invalid payment option. Allowed values are 'part_payment', 'full', or 'credit'.",
+  });
 }
 
 // Create sales record
@@ -152,12 +198,12 @@ return res.status(500).json({ message: 'Internal Server Error' });
           'customerPhone',
           'customerName',
           'paymentMethod',
-          'productPrice', 
+          'productPrice',
           'soldDate',
           'balance',
-          'nextPaymentDueDate',
+          'nextPaymentDate',
           'currentPayment',
-          'paymentDueDate'
+          'paymentDate'
         ],
       });
       return res.json({
@@ -184,7 +230,7 @@ const getSalesRecordById = async (req, res) => {
       console.error("Error fetching sales record:", err);
       return res.status(500).json({ message: "Internal Server Error" });
     }
-  };
+};
 
   const getSalesRecordByProductId = async (req, res) => {
     try {
@@ -208,30 +254,67 @@ const getSalesRecordById = async (req, res) => {
   
 
   // Update a sales record by ID
- const updateSalesRecord = async (req, res) => {
+  const updateSalesRecord = async (req, res) => {
     try {
       const { id } = req.params;
-      // const { error } = salesRecordSchema.validate(req.body);
-      // if (error) {
-      //   return res.status(400).json({ message: error.details[0].message });
-      // }
-
-      const [updated] = await SalesRecord.update(req.body, {
-        where: { saleId: id },
-      });
-
+      const updatedFields = req.body;
+  
+      // Fetch the existing record
+      const salesRecord = await SalesRecord.findByPk(id);
+      if (!salesRecord) {
+        return res.status(404).json({ message: "Sales record not found" });
+      }
+  
+      // Extract values from the request body or use existing values
+      const totalAmount = parseFloat(updatedFields.totalAmount) || salesRecord.totalAmount;
+      const currentPayment = parseFloat(updatedFields.currentPayment) || salesRecord.currentPayment;
+      const paymentOption = updatedFields.paymentOption || salesRecord.paymentOption;
+  
+      // Validate payment-related inputs only if relevant fields are being updated
+      let balance = salesRecord.balance; // Default to the existing balance
+      if (updatedFields.currentPayment || updatedFields.totalAmount || updatedFields.paymentOption) {
+        if (paymentOption === "part_payment") {
+          if (currentPayment <= 0 || currentPayment >= totalAmount) {
+            return res.status(400).json({
+              message: "For part payment, current payment must be greater than 0 and less than total amount.",
+            });
+          }
+          balance = totalAmount - currentPayment;
+        } else if (paymentOption === "full") {
+          if (currentPayment !== totalAmount) {
+            return res.status(400).json({
+              message: "For full payment, current payment must equal total amount.",
+            });
+          }
+          balance = 0; // No balance for full payment
+        } else if (paymentOption === "credit") {
+          if (currentPayment && currentPayment > 0) {
+            return res.status(400).json({
+              message: "For credit payment, current payment must be 0.",
+            });
+          }
+          balance = totalAmount; // Entire amount is due
+        }
+      }
+  
+      // Update the sales record with recalculated balance and other fields
+      const [updated] = await SalesRecord.update(
+        { ...updatedFields, balance }, // Include recalculated balance if applicable
+        { where: { saleId: id } }
+      );
+  
       if (updated) {
         const updatedSalesRecord = await SalesRecord.findByPk(id);
         return res.status(200).json(updatedSalesRecord);
       }
-
+  
       return res.status(404).json({ message: "Sales record not found" });
     } catch (err) {
       console.error("Error updating sales record:", err);
       return res.status(500).json({ message: "Internal Server Error" });
     }
   };
-
+  
   // Delete a sales record by ID
  const deleteSalesRecord = async (req, res) => {
     try {

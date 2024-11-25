@@ -183,6 +183,10 @@ router.get('/filter', loginJWTAthentication,authorize("Products", "view"),produc
  *                   type: string
  *                 storeId:
  *                   type: string
+ *                 categoryName:
+ *                   type: string
+ *                 storeName:
+ *                   type: string
  *       404:
  *         description: Product not found
  */
@@ -356,9 +360,9 @@ router.patch('/:prodId/stock',loginJWTAthentication, authorize("Products", "edit
 
 /**
  * @swagger
- * /transferProd:
+ * /products/transferProd:
  *   post:
- *     summary: Transfer products between stores
+ *     summary: Transfer a product between stores and categories
  *     tags: [Products]
  *     security:
  *       - bearerAuth: []
@@ -368,24 +372,16 @@ router.patch('/:prodId/stock',loginJWTAthentication, authorize("Products", "edit
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - name
- *               - quantity
- *               - currentStore
- *               - reasonForTransfer
- *               - currentCategory
- *               - destinationStore
- *               - destinationCategory
  *             properties:
  *               name:
  *                 type: string
- *                 description: Name of the product to be transferred
+ *                 description: Name of the product being transferred
  *               quantity:
  *                 type: integer
  *                 description: Quantity of the product to be transferred
  *               currentStore:
  *                 type: string
- *                 description: The store where the product currently exists
+ *                 description: The name of the current store
  *               reasonForTransfer:
  *                 type: string
  *                 description: The reason for transferring the product
@@ -394,18 +390,25 @@ router.patch('/:prodId/stock',loginJWTAthentication, authorize("Products", "edit
  *                 description: The category of the product in the current store
  *               destinationStore:
  *                 type: string
- *                 description: The store where the product will be transferred
+ *                 description: The name of the destination store
  *               destinationCategory:
  *                 type: string
  *                 description: The category of the product in the destination store
- *           example:
- *             name: "Laptop"
- *             quantity: 5
- *             currentStore: "Main Warehouse"
- *             reasonForTransfer: "Stock redistribution"
- *             currentCategory: "Electronics"
- *             destinationStore: "City Outlet"
- *             destinationCategory: "Computers"
+ *             required:
+ *               - name
+ *               - quantity
+ *               - currentStore
+ *               - currentCategory
+ *               - destinationStore
+ *               - destinationCategory
+ *             example:
+ *               name: "Laptop"
+ *               quantity: 5
+ *               currentStore: "Main Warehouse"
+ *               reasonForTransfer: "Stock redistribution"
+ *               currentCategory: "Electronics"
+ *               destinationStore: "Downtown Branch"
+ *               destinationCategory: "Computers"
  *     responses:
  *       200:
  *         description: Product transfer successful
@@ -416,51 +419,40 @@ router.patch('/:prodId/stock',loginJWTAthentication, authorize("Products", "edit
  *               properties:
  *                 message:
  *                   type: string
- *                   example: Product transfer successful.
- *                 userId:
- *                   type: string
- *                   description: The ID of the user performing the transfer
- *                 product:
+ *                   example: "Product transfer successful."
+ *                 transferDetails:
  *                   type: object
  *                   properties:
- *                     name:
+ *                     userId:
  *                       type: string
- *                       description: Name of the transferred product
- *                     transferredQuantity:
+ *                       example: "user123"
+ *                     productPhoto:
+ *                       type: string
+ *                       example: "image_url"
+ *                     productName:
+ *                       type: string
+ *                       example: "Laptop"
+ *                     currentStore:
+ *                       type: string
+ *                       example: "Main Warehouse"
+ *                     currentCategory:
+ *                       type: string
+ *                       example: "Electronics"
+ *                     destinationStore:
+ *                       type: string
+ *                       example: "Downtown Branch"
+ *                     destinationCategory:
+ *                       type: string
+ *                       example: "Computers"
+ *                     quantityTransferred:
  *                       type: integer
- *                       description: Quantity transferred
- *                     from:
- *                       type: object
- *                       properties:
- *                         store:
- *                           type: string
- *                           description: Name of the current store
- *                         category:
- *                           type: string
- *                           description: Name of the current category
- *                     to:
- *                       type: object
- *                       properties:
- *                         store:
- *                           type: string
- *                           description: Name of the destination store
- *                         category:
- *                           type: string
- *                           description: Name of the destination category
- *               example:
- *                 message: Product transfer successful.
- *                 userId: "3558d30f-5b1c-473b-b439-b30e7c5e3b1e"
- *                 product:
- *                   name: "Laptop"
- *                   transferredQuantity: 5
- *                   from:
- *                     store: "Main Warehouse"
- *                     category: "Electronics"
- *                   to:
- *                     store: "City Outlet"
- *                     category: "Computers"
+ *                       example: 5
+ *                     dateTransferred:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2024-11-19T15:30:00Z"
  *       400:
- *         description: Invalid input or insufficient quantity
+ *         description: Invalid input or insufficient product quantity
  *         content:
  *           application/json:
  *             schema:
@@ -468,9 +460,9 @@ router.patch('/:prodId/stock',loginJWTAthentication, authorize("Products", "edit
  *               properties:
  *                 message:
  *                   type: string
- *                   example: Insufficient quantity for transfer.
+ *                   example: "Insufficient quantity for transfer."
  *       403:
- *         description: Unauthorized access to transfer products
+ *         description: Forbidden – User is not authorized to perform the transfer
  *         content:
  *           application/json:
  *             schema:
@@ -478,9 +470,9 @@ router.patch('/:prodId/stock',loginJWTAthentication, authorize("Products", "edit
  *               properties:
  *                 message:
  *                   type: string
- *                   example: You do not have permission to transfer products between these stores.
+ *                   example: "You do not have permission to transfer products between these stores."
  *       404:
- *         description: Resource not found (e.g., store, category, or product)
+ *         description: Not Found – One of the stores, categories, or product records could not be found
  *         content:
  *           application/json:
  *             schema:
@@ -488,7 +480,7 @@ router.patch('/:prodId/stock',loginJWTAthentication, authorize("Products", "edit
  *               properties:
  *                 message:
  *                   type: string
- *                   example: Product not found in the specified category and store.
+ *                   example: "Current store not found for this user."
  *       500:
  *         description: Internal server error
  *         content:
@@ -498,12 +490,12 @@ router.patch('/:prodId/stock',loginJWTAthentication, authorize("Products", "edit
  *               properties:
  *                 message:
  *                   type: string
- *                   example: An error occurred during product transfer.
+ *                   example: "An error occurred during product transfer."
  *                 error:
  *                   type: string
  *                   description: Detailed error information
  *               example:
- *                 message: An error occurred during product transfer.
+ *                 message: "An error occurred during product transfer."
  *                 error: "Database connection failed."
  */
 
@@ -511,15 +503,15 @@ router.post('/transferProd',loginJWTAthentication,authorize("Products","edit"),p
 
 /**
  * @swagger
- * /transferLog:
+ * /products/transferLog:
  *   patch:
- *     summary: Retrieve the transfer logs for the authenticated user
+ *     summary: Retrieve the transfer log for the authenticated user
  *     tags: [Products]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Successfully retrieved transfer logs
+ *         description: Successfully retrieved the transfer log
  *         content:
  *           application/json:
  *             schema:
@@ -532,56 +524,41 @@ router.post('/transferProd',loginJWTAthentication,authorize("Products","edit"),p
  *                     properties:
  *                       userId:
  *                         type: string
- *                         description: ID of the user who made the transfer
- *                       product:
- *                         type: object
- *                         properties:
- *                           name:
- *                             type: string
- *                             description: Name of the transferred product
- *                           transferredQuantity:
- *                             type: integer
- *                             description: Quantity transferred
- *                           from:
- *                             type: object
- *                             properties:
- *                               store:
- *                                 type: string
- *                                 description: Name of the originating store
- *                               category:
- *                                 type: string
- *                                 description: Category of the product in the originating store
- *                           to:
- *                             type: object
- *                             properties:
- *                               store:
- *                                 type: string
- *                                 description: Name of the destination store
- *                               category:
- *                                 type: string
- *                                 description: Category of the product in the destination store
- *               example:
- *                 transfers: 
- *                   - userId: "3558d30f-5b1c-473b-b439-b30e7c5e3b1e"
- *                     product:
- *                       name: "Laptop"
- *                       transferredQuantity: 5
- *                       from:
- *                         store: "Main Warehouse"
- *                         category: "Electronics"
- *                       to:
- *                         store: "City Outlet"
- *                         category: "Computers"
- *                   - userId: "3558d30f-5b1c-473b-b439-b30e7c5e3b1e"
- *                     product:
- *                       name: "Phone"
- *                       transferredQuantity: 10
- *                       from:
- *                         store: "Suburb Depot"
- *                         category: "Mobile Devices"
- *                       to:
- *                         store: "Downtown Branch"
- *                         category: "Smartphones"
+ *                         description: ID of the user who performed the transfer
+ *                         example: "user123"
+ *                       productPhoto:
+ *                         type: string
+ *                         description: URL of the transferred product's photo
+ *                         example: "http://example.com/photo.jpg"
+ *                       productName:
+ *                         type: string
+ *                         description: Name of the transferred product
+ *                         example: "Laptop"
+ *                       currentStore:
+ *                         type: string
+ *                         description: Name of the store the product was transferred from
+ *                         example: "Main Warehouse"
+ *                       currentCategory:
+ *                         type: string
+ *                         description: Name of the category the product was in before transfer
+ *                         example: "Electronics"
+ *                       destinationStore:
+ *                         type: string
+ *                         description: Name of the store the product was transferred to
+ *                         example: "Downtown Branch"
+ *                       destinationCategory:
+ *                         type: string
+ *                         description: Name of the category the product was transferred to
+ *                         example: "Computers"
+ *                       quantityTransferred:
+ *                         type: integer
+ *                         description: Quantity of the product transferred
+ *                         example: 5
+ *                       dateTransferred:
+ *                         type: string
+ *                         format: date-time
+ *                         description: Date and time the transfer occurred
+ *                         example: "2024-11-19T15:30:00Z"
  *       500:
  *         description: Internal server error
  *         content:
@@ -591,13 +568,7 @@ router.post('/transferProd',loginJWTAthentication,authorize("Products","edit"),p
  *               properties:
  *                 message:
  *                   type: string
- *                   example: An error occurred while fetching transfer logs.
- *                 error:
- *                   type: string
- *                   description: Detailed error information
- *               example:
- *                 message: An error occurred while fetching transfer logs.
- *                 error: "Database connection failed."
+ *                   example: "An error occurred while fetching transfer logs."
  */
 
 router.patch('/transferLog' ,loginJWTAthentication ,authorize("Products","edit","create","view"),productController.getTransferLog);
