@@ -183,6 +183,10 @@ router.get('/filter', loginJWTAthentication,authorize("Products", "view"),produc
  *                   type: string
  *                 storeId:
  *                   type: string
+ *                 categoryName:
+ *                   type: string
+ *                 storeName:
+ *                   type: string
  *       404:
  *         description: Product not found
  */
@@ -354,6 +358,219 @@ router.get('/store/:storeId',loginJWTAthentication,authorize("Products", "view")
  */
 router.patch('/:prodId/stock',loginJWTAthentication, authorize("Products", "edit"),productController.updateProductStock);
 
+/**
+ * @swagger
+ * /products/transferProd:
+ *   post:
+ *     summary: Transfer a product between stores and categories
+ *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Name of the product being transferred
+ *               quantity:
+ *                 type: integer
+ *                 description: Quantity of the product to be transferred
+ *               currentStore:
+ *                 type: string
+ *                 description: The name of the current store
+ *               reasonForTransfer:
+ *                 type: string
+ *                 description: The reason for transferring the product
+ *               currentCategory:
+ *                 type: string
+ *                 description: The category of the product in the current store
+ *               destinationStore:
+ *                 type: string
+ *                 description: The name of the destination store
+ *               destinationCategory:
+ *                 type: string
+ *                 description: The category of the product in the destination store
+ *             required:
+ *               - name
+ *               - quantity
+ *               - currentStore
+ *               - currentCategory
+ *               - destinationStore
+ *               - destinationCategory
+ *             example:
+ *               name: "Laptop"
+ *               quantity: 5
+ *               currentStore: "Main Warehouse"
+ *               reasonForTransfer: "Stock redistribution"
+ *               currentCategory: "Electronics"
+ *               destinationStore: "Downtown Branch"
+ *               destinationCategory: "Computers"
+ *     responses:
+ *       200:
+ *         description: Product transfer successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Product transfer successful."
+ *                 transferDetails:
+ *                   type: object
+ *                   properties:
+ *                     userId:
+ *                       type: string
+ *                       example: "user123"
+ *                     productPhoto:
+ *                       type: string
+ *                       example: "image_url"
+ *                     productName:
+ *                       type: string
+ *                       example: "Laptop"
+ *                     currentStore:
+ *                       type: string
+ *                       example: "Main Warehouse"
+ *                     currentCategory:
+ *                       type: string
+ *                       example: "Electronics"
+ *                     destinationStore:
+ *                       type: string
+ *                       example: "Downtown Branch"
+ *                     destinationCategory:
+ *                       type: string
+ *                       example: "Computers"
+ *                     quantityTransferred:
+ *                       type: integer
+ *                       example: 5
+ *                     dateTransferred:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2024-11-19T15:30:00Z"
+ *       400:
+ *         description: Invalid input or insufficient product quantity
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Insufficient quantity for transfer."
+ *       403:
+ *         description: Forbidden – User is not authorized to perform the transfer
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "You do not have permission to transfer products between these stores."
+ *       404:
+ *         description: Not Found – One of the stores, categories, or product records could not be found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Current store not found for this user."
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "An error occurred during product transfer."
+ *                 error:
+ *                   type: string
+ *                   description: Detailed error information
+ *               example:
+ *                 message: "An error occurred during product transfer."
+ *                 error: "Database connection failed."
+ */
 
+router.post('/transferProd',loginJWTAthentication,authorize("Products","edit"),productController.transferProduct);
+
+/**
+ * @swagger
+ * /products/transferLog:
+ *   patch:
+ *     summary: Retrieve the transfer log for the authenticated user
+ *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved the transfer log
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 transfers:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       userId:
+ *                         type: string
+ *                         description: ID of the user who performed the transfer
+ *                         example: "user123"
+ *                       productPhoto:
+ *                         type: string
+ *                         description: URL of the transferred product's photo
+ *                         example: "http://example.com/photo.jpg"
+ *                       productName:
+ *                         type: string
+ *                         description: Name of the transferred product
+ *                         example: "Laptop"
+ *                       currentStore:
+ *                         type: string
+ *                         description: Name of the store the product was transferred from
+ *                         example: "Main Warehouse"
+ *                       currentCategory:
+ *                         type: string
+ *                         description: Name of the category the product was in before transfer
+ *                         example: "Electronics"
+ *                       destinationStore:
+ *                         type: string
+ *                         description: Name of the store the product was transferred to
+ *                         example: "Downtown Branch"
+ *                       destinationCategory:
+ *                         type: string
+ *                         description: Name of the category the product was transferred to
+ *                         example: "Computers"
+ *                       quantityTransferred:
+ *                         type: integer
+ *                         description: Quantity of the product transferred
+ *                         example: 5
+ *                       dateTransferred:
+ *                         type: string
+ *                         format: date-time
+ *                         description: Date and time the transfer occurred
+ *                         example: "2024-11-19T15:30:00Z"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "An error occurred while fetching transfer logs."
+ */
+
+router.patch('/transferLog' ,loginJWTAthentication ,authorize("Products","edit","create","view"),productController.getTransferLog);
 
 module.exports = router;
