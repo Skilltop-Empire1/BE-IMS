@@ -13,6 +13,8 @@ const Notification = require("./Notification")(sequelize, DataTypes)
 const Expenditure = require("./Expenditure")(sequelize, DataTypes)
 const Plan = require("./Plan")(sequelize, DataTypes)
 const Demo = require("./Demo")(sequelize, DataTypes)
+const Payment = require("./Payment")(sequelize, DataTypes)
+const Code = require("./Code")(sequelize, DataTypes)
 // Define the db object with models and sequelize
 const db = {
   sequelize,
@@ -27,6 +29,8 @@ const db = {
   Expenditure,
   Plan,
   Demo,
+  Payment,
+  Code,
 };
 
 // Set up model associations

@@ -126,7 +126,7 @@ class UserObject {
   };
 
   signup = async (req, res) => {
-    const { userName, email, password } = req.body;
+    const { userName, email, password} = req.body;
 
     // **Block new users from signing up**
     const allowNewUsers = true; 
