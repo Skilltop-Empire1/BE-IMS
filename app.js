@@ -56,6 +56,7 @@ const notificationRoute = require("./routes/notificationRoutes")
 const expenditureRoute = require("./routes/expenditureRoutes")
 const planRoute = require("./routes/planRoute");
 const demoRoute = require("./routes/demoRoute");
+const paymentRoute = require("./routes/paymentRoutes");
 
 const errorHandler = require("./error/errorHandler")
 const notFoundError = require("./error/notFoundError")
@@ -71,6 +72,7 @@ app.use("/api/IMS/notification", notificationRoute);
 app.use("/api/IMS/expenditure", expenditureRoute);
 app.use("/api/IMS/plan", planRoute);
 app.use("/api/IMS/demo", demoRoute);
+app.use("/api/IMS/payment", paymentRoute);
 
 
 
