@@ -186,16 +186,30 @@ async function manuallySendCode(req,res) {
  }
 }
 
+// async function getAllCodes(req, res) {
+//   try {
+//     const codes = await Code.findAll();
+//     const pays = await Payment.findAll()
+//     res.status(200).json({codes,pays});
+//   } catch (error) {
+//     res.status(500).json({ msg: 'Error fetching codes', error: error.message });
+//   }
+// }
+
 async function getAllCodes(req, res) {
   try {
-    const codes = await Code.findAll();
-    const pays = await Payment.findAll()
-    res.status(200).json({codes,pays});
+    const codes = await Code.findAll({
+      include: {
+        model: Payment,
+        as: 'Payment',
+        required: false, 
+      },
+    });
+    res.status(200).json({ codes });
   } catch (error) {
     res.status(500).json({ msg: 'Error fetching codes', error: error.message });
   }
 }
-
 
 async function getCodeById(req, res) {
   const { id } = req.params;
