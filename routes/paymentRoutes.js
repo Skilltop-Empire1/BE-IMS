@@ -98,6 +98,74 @@
 
 /**
  * @swagger
+ * /api/payments/code/list:
+ *   get:
+ *     summary: Retrieve a list of all payment codes
+ *     tags: [Payments]
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved list of payment codes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     description: Unique identifier for the payment code
+ *                     example: "123e4567-e89b-12d3-a456-426614174000"
+ *                   email:
+ *                     type: string
+ *                     description: Email associated with the payment code
+ *                     example: "janedoe@example.com"
+ *                   businessName:
+ *                     type: string
+ *                     description: Name of the business or individual
+ *                     example: "Jane Doe Enterprises"
+ *                   code:
+ *                     type: string
+ *                     description: Generated payment code
+ *                     example: "ABC123XYZ"
+ *                   phone:
+ *                     type: string
+ *                     description: Contact phone number
+ *                     example: "+1234567899"
+ *                   subType:
+ *                     type: string
+ *                     description: Subscription type (duration)
+ *                     example: "1 year"
+ *                   paymentDate:
+ *                     type: string
+ *                     format: date
+ *                     description: Date when the payment was made
+ *                     example: "2024-12-01"
+ *                   generatedBy:
+ *                     type: string
+ *                     description: Indicates how the code was generated
+ *                     example: "manual"
+ *                   expiresAt:
+ *                     type: string
+ *                     format: date-time
+ *                     description: Expiration date of the subscription
+ *                     example: "2025-12-01T00:00:00Z"
+ *                   isUsed:
+ *                     type: boolean
+ *                     description: Whether the code has been used
+ *                     example: true
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             example:
+ *               msg: "Error retrieving payment codes"
+ *               error: "Detailed error message"
+ */
+
+
+/**
+ * @swagger
  * /api/payments/code/{id}:
  *   get:
  *     summary: Get a payment code by ID
