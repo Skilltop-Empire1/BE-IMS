@@ -15,7 +15,7 @@
  *           example: "PAY12345"
  *         status:
  *           type: string
- *           description: Status of the payment code
+ *           description: Status of the payment code (e.g., active, inactive)
  *           example: "active"
  *         createdAt:
  *           type: string
@@ -42,35 +42,59 @@
  *           application/json:
  *             example:
  *               message: "Payment code sent successfully."
+ *               code: "PAY12345"
  *       500:
  *         description: Server error
  */
 
 /**
  * @swagger
- * /api/payments/code/list:
- *   get:
- *     summary: Get all payment codes
+ * /api/payments/code/send:
+ *   post:
+ *     summary: Manually send a payment code
  *     tags: [Payments]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: The business name or client name
+ *                 example: "John Doe Enterprises"
+ *               email:
+ *                 type: string
+ *                 description: Client's email address
+ *                 example: "johndoe@example.com"
+ *               amount:
+ *                 type: number
+ *                 description: Payment amount for the subscription
+ *                 example: 250.00
+ *               subs:
+ *                 type: string
+ *                 description: Subscription type
+ *                 example: "premium"
+ *               phone:
+ *                 type: string
+ *                 description: Client's phone number
+ *                 example: "+1234567890"
  *     responses:
  *       200:
- *         description: List of all payment codes
+ *         description: Subscription request processed successfully
  *         content:
  *           application/json:
  *             example:
- *               - id: "123e4567-e89b-12d3-a456-426614174001"
- *                 code: "PAY12345"
- *                 status: "active"
- *                 createdAt: "2024-11-29T10:00:00Z"
- *                 updatedAt: "2024-11-29T12:00:00Z"
- *               - id: "123e4567-e89b-12d3-a456-426614174002"
- *                 code: "PAY67890"
- *                 status: "inactive"
- *                 createdAt: "2024-11-28T11:00:00Z"
- *                 updatedAt: "2024-11-28T13:00:00Z"
+ *               msg: "Subscribe successfully"
  *       500:
  *         description: Server error
+ *         content:
+ *           application/json:
+ *             example:
+ *               msg: "Error message describing the issue"
  */
+
 
 /**
  * @swagger
@@ -112,9 +136,10 @@
  *       - in: path
  *         name: id
  *         required: true
- *         description: Payment code ID
+ *         description: Payment code ID (payId)
  *         schema:
  *           type: string
+ *           example: "123e4567-e89b-12d3-a456-426614174000"
  *     requestBody:
  *       required: true
  *       content:
@@ -122,23 +147,82 @@
  *           schema:
  *             type: object
  *             properties:
- *               code:
+ *               name:
  *                 type: string
- *                 example: "PAY98765"
- *               status:
+ *                 description: Updated client name
+ *                 example: "Jane Doe Enterprises"
+ *               email:
  *                 type: string
- *                 example: "inactive"
+ *                 description: Updated client email
+ *                 example: "janedoe@example.com"
+ *               subs:
+ *                 type: string
+ *                 description: Subscription duration
+ *                 example: "1 year"
+ *               payDate:
+ *                 type: string
+ *                 format: date
+ *                 description: Payment date for subscription
+ *                 example: "2024-12-01"
+ *               phone:
+ *                 type: string
+ *                 description: Updated phone number
+ *                 example: "+1234567899"
+ *               sendEmail:
+ *                 type: boolean
+ *                 description: Whether to send an email notification
+ *                 example: true
+ *               amount:
+ *                 type: number
+ *                 description: Payment amount
+ *                 example: 500.00
+ *               paymentProvider:
+ *                 type: string
+ *                 description: Payment provider used
+ *                 example: "PayPal"
+ *               transactionId:
+ *                 type: string
+ *                 description: Transaction ID for the payment
+ *                 example: "TXN9876543210"
+ *               paymentStatus:
+ *                 type: string
+ *                 description: Status of the payment
+ *                 example: "completed"
  *     responses:
  *       200:
  *         description: Payment code updated successfully
  *         content:
  *           application/json:
  *             example:
- *               message: "Payment code updated successfully."
+ *               msg: "Code updated successfully"
+ *               code:
+ *                 id: "123e4567-e89b-12d3-a456-426614174000"
+ *                 name: "Jane Doe Enterprises"
+ *                 email: "janedoe@example.com"
+ *                 phone: "+1234567899"
+ *                 expiresAt: "2025-12-01T00:00:00Z"
+ *                 paymentDate: "2024-12-01"
+ *                 isUsed: true
+ *               payment:
+ *                 email: "janedoe@example.com"
+ *                 amount: 500.00
+ *                 paymentProvider: "PayPal"
+ *                 transactionId: "TXN9876543210"
+ *                 paymentStatus: "completed"
+ *                 paidDate: "2024-12-01"
  *       404:
  *         description: Payment code not found
+ *         content:
+ *           application/json:
+ *             example:
+ *               msg: "Code not found"
  *       500:
  *         description: Server error
+ *         content:
+ *           application/json:
+ *             example:
+ *               msg: "Error updating code"
+ *               error: "Detailed error message"
  */
 
 /**
@@ -166,7 +250,6 @@
  *       500:
  *         description: Server error
  */
-
 
 
 const express = require("express");
