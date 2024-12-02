@@ -2,149 +2,176 @@
  * @swagger
  * components:
  *   schemas:
- *     PaymentDetails:
+ *     PaymentCode:
  *       type: object
  *       properties:
- *         transactionId:
+ *         id:
  *           type: string
- *           example: "txn_123456789"
- *         paymentProvider:
+ *           description: Unique identifier for the payment code
+ *           example: "123e4567-e89b-12d3-a456-426614174000"
+ *         code:
  *           type: string
- *           example: "mockProvider"
- *         amount:
- *           type: number
- *           example: 150.50
- *         email:
+ *           description: The payment code
+ *           example: "PAY12345"
+ *         status:
  *           type: string
- *           example: "user@example.com"
- *         subs:
+ *           description: Status of the payment code (e.g., active, inactive)
+ *           example: "active"
+ *         createdAt:
  *           type: string
- *           example: "1 month"
- *     SignupCodeRequest:
- *       type: object
- *       properties:
- *         email:
+ *           format: date-time
+ *           description: Date the payment code was created
+ *           example: "2024-11-29T10:00:00Z"
+ *         updatedAt:
  *           type: string
- *           example: "user@example.com"
- *         name:
- *           type: string
- *           example: "John Doe"
- *         amount:
- *           type: number
- *           example: 100
- *         subs:
- *           type: string
- *           example: "6 months"
- *         phone:
- *           type: string
- *           example: "+1234567890"
+ *           format: date-time
+ *           description: Date the payment code was last updated
+ *           example: "2024-11-30T12:00:00Z"
  */
 
 /**
  * @swagger
- * /api/manuallySendCode:
+ * /api/payments/code/send:
  *   post:
- *     summary: Manually send signup code
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/SignupCodeRequest'
+ *     summary: Manually send a payment code
+ *     tags: [Payments]
  *     responses:
- *       200:
- *         description: Subscription successful
+ *       201:
+ *         description: Payment code sent successfully
  *         content:
  *           application/json:
  *             example:
- *               msg: "Subscribe successfully"
+ *               message: "Payment code sent successfully."
+ *               code: "PAY12345"
  *       500:
  *         description: Server error
  */
 
 /**
  * @swagger
- * /api/makePayment:
- *   post:
- *     summary: Process payment
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/PaymentDetails'
+ * /api/payments/code/list:
+ *   get:
+ *     summary: Get all payment codes
+ *     tags: [Payments]
  *     responses:
  *       200:
- *         description: Payment processed successfully
+ *         description: List of all payment codes
  *         content:
  *           application/json:
  *             example:
- *               message: "Payment processed successfully."
- *       400:
- *         description: Invalid payment details
- *         content:
- *           application/json:
- *             example:
- *               error: "Invalid payment"
+ *               - id: "123e4567-e89b-12d3-a456-426614174001"
+ *                 code: "PAY12345"
+ *                 status: "active"
+ *                 createdAt: "2024-11-29T10:00:00Z"
+ *                 updatedAt: "2024-11-29T12:00:00Z"
+ *               - id: "123e4567-e89b-12d3-a456-426614174002"
+ *                 code: "PAY67890"
+ *                 status: "inactive"
+ *                 createdAt: "2024-11-28T11:00:00Z"
+ *                 updatedAt: "2024-11-28T13:00:00Z"
  *       500:
  *         description: Server error
  */
 
 /**
  * @swagger
- * /api/getAllCodes:
+ * /api/payments/code/{id}:
  *   get:
- *     summary: Retrieve all codes and payments
- *     responses:
- *       200:
- *         description: List of codes and payments
- *         content:
- *           application/json:
- *             example:
- *               codes:
- *                 - email: "user1@example.com"
- *                   code: "123456"
- *                   expiresAt: "2024-12-31T00:00:00Z"
- *               pays:
- *                 - email: "user1@example.com"
- *                   amount: 150.50
- *                   paymentStatus: "completed"
- *       500:
- *         description: Error fetching data
- */
-
-/**
- * @swagger
- * /api/getCodeById/{id}:
- *   get:
- *     summary: Get code by ID
+ *     summary: Get a payment code by ID
+ *     tags: [Payments]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
+ *         description: Payment code ID
  *         schema:
  *           type: string
- *         example: "123"
  *     responses:
  *       200:
- *         description: Code details
+ *         description: Payment code details
  *         content:
  *           application/json:
  *             example:
- *               code:
- *                 email: "user1@example.com"
- *                 code: "123456"
- *                 expiresAt: "2024-12-31T00:00:00Z"
- *               pay:
- *                 email: "user1@example.com"
- *                 amount: 150.50
- *                 paymentStatus: "completed"
+ *               id: "123e4567-e89b-12d3-a456-426614174000"
+ *               code: "PAY12345"
+ *               status: "active"
+ *               createdAt: "2024-11-29T10:00:00Z"
+ *               updatedAt: "2024-11-30T12:00:00Z"
  *       404:
- *         description: Code not found
+ *         description: Payment code not found
  *       500:
  *         description: Server error
  */
 
+/**
+ * @swagger
+ * /api/payments/code/{id}:
+ *   put:
+ *     summary: Update a payment code by ID
+ *     tags: [Payments]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Payment code ID
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               code:
+ *                 type: string
+ *                 example: "PAY98765"
+ *               status:
+ *                 type: string
+ *                 example: "inactive"
+ *     responses:
+ *       200:
+ *         description: Payment code updated successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Payment code updated successfully."
+ *               updatedCode:
+ *                 id: "123e4567-e89b-12d3-a456-426614174000"
+ *                 code: "PAY98765"
+ *                 status: "inactive"
+ *                 updatedAt: "2024-12-01T14:00:00Z"
+ *       404:
+ *         description: Payment code not found
+ *       500:
+ *         description: Server error
+ */
+
+/**
+ * @swagger
+ * /api/payments/code/{id}:
+ *   delete:
+ *     summary: Delete a payment code by ID
+ *     tags: [Payments]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Payment code ID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Payment code deleted successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Payment code deleted successfully."
+ *       404:
+ *         description: Payment code not found
+ *       500:
+ *         description: Server error
+ */
 
 
 const express = require("express");
