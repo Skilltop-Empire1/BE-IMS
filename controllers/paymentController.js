@@ -2,134 +2,8 @@
  const generateCode = require("../utils/signUpCode")
  const nodemailer = require("nodemailer")
  const { Op } = require('sequelize'); 
-
-// async function manuallySendCode(email) {
-//     const code = generateCode();
-  
-//     // Save code to the database
-//     await Code.create({ email, code, generatedBy: 'manual' });
-  
-//     // Send code via email
-//     await transporter.sendMail({
-//       from: '"Your App Name" <no-reply@example.com>',
-//       to: email,
-//       subject: 'Your Signup Code',
-//       text: `Your code is: ${code}`,
-//     });
-  
-//     console.log(`Code sent to ${email}: ${code}`);
-//   }
-  
-
-
-
-
-// async function validateSignupCode(email, code) {
-//     const entry = await Code.findOne({ where: { email, code, isUsed: false } });
-  
-//     if (!entry) {
-//       throw new Error('Invalid or expired code.');
-//     }
-  
-//     entry.isUsed = true; // Mark as used
-//     await entry.save();
-  
-//     return true;
-//   }
-  
-
-//   async function validatePayment(paymentDetails) {
-//     const { transactionId, paymentProvider, amount, email } = paymentDetails;
-  
-//     // Check for required fields
-//     if (!transactionId || !paymentProvider || !amount || !email) {
-//       throw new Error('Missing payment details');
-//     }
-  
-//     // Simulate validation with a mock API or real payment provider logic
-//     try {
-//       if (paymentProvider === 'mockProvider') {
-//         // Simulate an API call to validate the payment (mock example)
-//         const mockApiResponse = {
-//           transactionId: transactionId,
-//           status: 'completed', // Example status
-//           amount: amount,
-//         };
-  
-//         // Validate transaction ID and amount match expected values
-//         if (mockApiResponse.status !== 'completed' || mockApiResponse.amount !== amount) {
-//           return false;
-//         }
-  
-//         return true;
-//       }
-  
-//       // Example: Integrate with a real payment provider like Stripe/PayPal
-//       // if (paymentProvider === 'stripe') {
-//       //   const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-//       //   const paymentIntent = await stripe.paymentIntents.retrieve(transactionId);
-//       //   return paymentIntent.status === 'succeeded' && paymentIntent.amount_received === amount;
-//       // }
-  
-//       // Add additional provider checks as needed
-//       return false; // Default to false if provider is unrecognized
-  
-//     } catch (error) {
-//       console.error('Payment validation error:', error);
-//       throw new Error('Payment validation failed');
-//     }
-//   }
-  
-
-  
-
-//   async function handlePaymentSuccess(paymentDetails) {
-//     const { email, amount, paymentProvider, transactionId } = paymentDetails;
-  
-//     // Save payment record
-//     await Payment.create({
-//       email,
-//       paymentStatus: 'completed',
-//       paymentProvider,
-//       amount,
-//       transactionId,
-//     });
-  
-//     // Generate and send signup code
-//     const code = generateCode();
-//     await Code.create({ email, code, generatedBy: paymentProvider });
-  
-//     await transporter.sendMail({
-//       from: '"Your App Name" <no-reply@example.com>',
-//       to: email,
-//       subject: 'Your Signup Code',
-//       text: `Your code is: ${code}`,
-//     });
-  
-//     console.log(`Payment completed. Code sent to ${email}`);
-//   }
-
-
-
-  
-//   async function makePayment (req, res)  {
-//     try {
-//       const paymentDetails = req.body;
-  
-//       // Validate payment (via provider API, if necessary)
-//       const isValidPayment = await validatePayment(paymentDetails);
-//       if (!isValidPayment) {
-//         return res.status(400).json({ error: 'Invalid payment' });
-//       }
-  
-//       // Handle successful payment
-//       await handlePaymentSuccess(paymentDetails);
-  
-//       res.status(200).json({ message: 'Payment processed successfully.' });
-//     } catch (error) {
-//       res.status(500).json({ error: error.message });
-//     }
-//   };
+const Stripe = require("stripe")
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 
 let transporter = nodemailer.createTransport({
@@ -172,7 +46,7 @@ async function manuallySendCode(req,res) {
     from: `"IMS" <${process.env.EMAIL_USER}>`,
     to: process.env.SKILLTOP_EMAIL,
     subject: 'Signup Code Request',
-    text: `Dear Admin,\n\nA client  NAME
+    text: `Dear Admin,\n\nA client  ${name}
     
     
     name:${name} with email:${email}  has requested to subscribe.\n\nKindly attend to ${name} as soon as payment is made!`,
@@ -340,43 +214,64 @@ async function validateSignupCode(req, res, next) {
 }
 
 
-
-async function handlePaymentSuccess(paymentDetails) {
+async function handlePaymentSuccess(req,res,paymentDetails) {
   const { email, amount, paymentProvider, transactionId, subs } = paymentDetails;
-
-  // Save payment record
-  await Payment.create({
+  console.log("req",req.body)
+  await manuallySendCode(req,res,{ email, subs });
+  const payment = await Payment.findOne({where:{email}})
+  if (!payment) {
+    return res.status(404).json({ error: "Payment record not found for this email." });
+  }
+  await payment.update({
     email,
     paymentStatus: 'completed',
-    paymentProvider,
+    paymentProvider: paymentProvider || 'Stripe',
     amount,
     transactionId,
   });
 
-  // Generate and send signup code
-  await manuallySendCode(email, subs);
-
+  
   console.log(`Payment completed. Code sent to ${email}`);
 }
 
+
+
 async function makePayment(req, res) {
   try {
-    const paymentDetails = req.body;
-
-    // Validate payment (via provider API, if necessary)
-    const isValidPayment = await validatePayment(paymentDetails);
-    if (!isValidPayment) {
-      return res.status(400).json({ error: 'Invalid payment' });
+    const { email, amount, tokenId, subs } = req.body;
+  
+    // const codeRecord = await Code.findOne({ where: { email } });
+    //   if (!codeRecord) {
+    //     return res.status(400).json({ error: 'Email does not exist in Codes table.' });
+    // }
+    const charge = await stripe.charges.create({
+      amount: amount * 100, // Stripe expects amounts in cents
+      currency: 'USD',
+      source: tokenId,
+      receipt_email: email,
+      description: `Subscription payment for ${subs}`,
+    });
+    // Validate successful payment
+    if (!charge.paid) {
+      return res.status(400).json({ error: 'Payment failed' });
     }
 
-    // Handle successful payment and send the code
-    await handlePaymentSuccess(paymentDetails);
-
-    res.status(200).json({ message: 'Payment processed successfully.' });
+    const paymentDetails = {
+      email,
+      amount: charge.amount / 100, 
+      paymentProvider: 'Stripe',
+      transactionId: charge.id,
+      subs,
+    };
+    // Handle successful payment
+    await handlePaymentSuccess(req,res,paymentDetails);
+    //res.status(200).json({ message: 'Payment processed successfully.' });
   } catch (error) {
+    console.error('Payment error:', error);
     res.status(500).json({ error: error.message });
   }
 }
+
 
 
   module.exports = {
