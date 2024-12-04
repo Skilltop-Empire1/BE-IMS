@@ -5,19 +5,26 @@
 const Stripe = require("stripe")
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
-
-let transporter = nodemailer.createTransport({
-  host: "mail.skilltopims.com",  
-  port: 587, 
-  secure: false, 
+const transporter = await nodemailer.createTransport({
+  service: process.env.NODEMAIL_SERVICE,
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: process.env.NODEMAIL_USER,
+    pass: process.env.NODEMAIL_PASS,
   },
-  tls: {
-    rejectUnauthorized: false
-  }
 });
+
+// let transporter = nodemailer.createTransport({
+//   host: "mail.skilltopims.com",  
+//   port: 587, 
+//   secure: false, 
+//   auth: {
+//     user: process.env.EMAIL_USER,
+//     pass: process.env.EMAIL_PASS,
+//   },
+//   tls: {
+//     rejectUnauthorized: false
+//   }
+// });
 
 async function manuallySendCode(req,res) {
   const {name, email,amount, subs,phone} = req.body
