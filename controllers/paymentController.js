@@ -5,7 +5,7 @@
 const Stripe = require("stripe")
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
-const transporter = await nodemailer.createTransport({
+const transporter = nodemailer.createTransport({
   service: process.env.NODEMAIL_SERVICE,
   auth: {
     user: process.env.NODEMAIL_USER,
