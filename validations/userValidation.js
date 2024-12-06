@@ -43,9 +43,9 @@ const demoValidation = Joi.object({
   lastName: Joi.string().required(),
   email: Joi.string().email().required(),
   phone:Joi.string().required().min(11),
-  // state: Joi.string().required(),
+  state: Joi.string(),
   company: Joi.string().required(),
-  // title: Joi.string().required(),
+  title: Joi.string(),
 })
 
 //*****export module */
